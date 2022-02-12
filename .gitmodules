@@ -1,0 +1,3 @@
+[submodule "cantor"]
+	path = cantor
+	url = git@github.com:ethan-stone/cantor.git
