@@ -2,7 +2,7 @@
 
 ## structure
 
-| codebase |   description    |
-|----------|------------------|
-|  cantor  | Server Stack API |
-|   koch   | Next.js Frontend |
+| codebase                                        | description      |
+| ----------------------------------------------- | ---------------- |
+| [cantor](https://github.com/ethan-stone/cantor) | Server Stack API |
+| [koch](https://github.com/ethan-stone/koch)     | Next.js Frontend |
