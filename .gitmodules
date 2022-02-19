@@ -1,6 +1,3 @@
 [submodule "cantor"]
 	path = cantor
 	url = git@github.com:ethan-stone/cantor.git
-[submodule "koch"]
-	path = koch
-	url = git@github.com:ethan-stone/koch.git
