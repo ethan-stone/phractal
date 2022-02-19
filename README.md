@@ -1,4 +1,4 @@
-# fractal
+# phractal
 
 ## structure
 
