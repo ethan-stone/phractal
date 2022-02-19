@@ -5,15 +5,13 @@ export default class Stack extends sst.Stack {
     super(scope, id, props);
 
     // Create a HTTP API
-    const api = new sst.Api(this, "api", {
-      routes: {
-        "GET /": "src/lambda.handler"
-      }
+    const apolloApi = new sst.ApolloApi(this, "apollo-api", {
+      server: "src/lambda.handler"
     });
 
     // Show the endpoint in the output
     this.addOutputs({
-      ApiEndpoint: api.url
+      ApolloApiEndpoint: apolloApi.url
     });
   }
 }

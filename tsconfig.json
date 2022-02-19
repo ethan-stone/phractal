@@ -1,4 +1,7 @@
 {
   "extends": "@tsconfig/node14",
-  "include": ["stacks", "src", "test"]
+  "include": ["stacks", "src", "test"],
+  "compilerOptions": {
+    "esModuleInterop": true
+  }
 }
