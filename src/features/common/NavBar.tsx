@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 const NavBar: React.FC = () => {
   const navLinkStyles = "mx-2";
   return (
-    <nav className="border-b-2 border-black p-3">
+    <nav className="border-b-2 border-gray-800 p-3">
       <Link className={navLinkStyles} to="/signin">
         Sign In
       </Link>
