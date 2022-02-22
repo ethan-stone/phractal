@@ -17,6 +17,8 @@ export default class Stack extends sst.Stack {
       }
     });
 
+    const notesBucket = new sst.Bucket(this, "notes-bucket");
+
     // Create a HTTP API
     const restApi = new sst.Api(this, "rest-api", {
       defaultPayloadFormatVersion: sst.ApiPayloadFormatVersion.V2,
@@ -31,7 +33,14 @@ export default class Stack extends sst.Stack {
       ),
       defaultAuthorizationType: sst.ApiAuthorizationType.JWT,
       routes: {
-        "GET /hello-world": "src/lambda.main"
+        "GET /hello-world": "src/lambda.main",
+        "POST /notes": {
+          function: {
+            handler: "src/notes/create.main",
+            environment: { notesBucketName: notesBucket.bucketName },
+            permissions: [notesBucket]
+          }
+        }
       }
     });
 
