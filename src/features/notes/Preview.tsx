@@ -8,6 +8,7 @@ import rehypeSanitize from "rehype-sanitize";
 import RemarkCode from "./RemarkCode";
 import { defaultSchema } from "hast-util-sanitize";
 import "github-markdown-css/github-markdown-light.css";
+import "./preview.css";
 
 interface Props {
   doc: string;
