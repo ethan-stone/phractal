@@ -5,3 +5,10 @@ export interface ReactRouterLocation extends Location {
     [k: string]: any;
   };
 }
+
+export type Note = {
+  id: string;
+  name: string;
+  description: string | null;
+  ownerId: string;
+};

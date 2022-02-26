@@ -31,9 +31,9 @@ function App() {
                 <Notes />
               </RequireAuth>
             }
-          />{" "}
+          />
           <Route
-            path="/note"
+            path="/notes/:id"
             element={
               <RequireAuth redirectTo="/signin">
                 <Note />

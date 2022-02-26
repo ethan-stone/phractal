@@ -49,6 +49,7 @@ interface Props {
 const useCodeMirror = <T extends Element>(
   props: Props
 ): [React.MutableRefObject<T | null>, EditorView?] => {
+  console.log(props);
   const refContainer = useRef<T>(null);
   const [editorView, setEditorView] = useState<EditorView>();
   const { onChange } = props;
