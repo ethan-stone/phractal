@@ -24,7 +24,7 @@ type PathParameters = {
 async function getObject(Key: string): Promise<string> {
   const getObjectCommand = new GetObjectCommand({
     Key,
-    Bucket: process.env.NOTE_BUCKET_NAME
+    Bucket: process.env.NOTES_BUCKET_NAME
   });
 
   const noteObject = await s3.send(getObjectCommand);

@@ -1,6 +1,7 @@
 import * as sst from "@serverless-stack/resources";
 import * as cognito from "aws-cdk-lib/aws-cognito";
 import { HttpUserPoolAuthorizer } from "@aws-cdk/aws-apigatewayv2-authorizers-alpha";
+import { constructNotesRoutes } from "./api/routes/notes";
 
 export default class Stack extends sst.Stack {
   constructor(scope: sst.App, id: string, props?: sst.StackProps) {
@@ -19,6 +20,13 @@ export default class Stack extends sst.Stack {
 
     const notesBucket = new sst.Bucket(this, "notes-bucket");
 
+    const notesRoutes = constructNotesRoutes({
+      environment: {
+        NOTES_BUCKET_NAME: notesBucket.bucketName
+      },
+      permissions: [notesBucket]
+    });
+
     // Create a HTTP API
     const restApi = new sst.Api(this, "rest-api", {
       defaultPayloadFormatVersion: sst.ApiPayloadFormatVersion.V2,
@@ -34,27 +42,7 @@ export default class Stack extends sst.Stack {
       defaultAuthorizationType: sst.ApiAuthorizationType.JWT,
       routes: {
         "GET /hello-world": "src/lambda.main",
-        "POST /notes": {
-          function: {
-            handler: "src/notes/create.main",
-            environment: { NOTES_BUCKET_NAME: notesBucket.bucketName },
-            permissions: [notesBucket]
-          }
-        },
-        "GET /notes/{id}": {
-          function: {
-            handler: "src/notes/retrieveById.main",
-            environment: { NOTE_BUCKET_NAME: notesBucket.bucketName },
-            permissions: [notesBucket]
-          }
-        },
-        "GET /notes": {
-          function: {
-            handler: "src/notes/retrieve.main",
-            environment: { NOTE_BUCKET_NAME: notesBucket.bucketName },
-            permissions: [notesBucket]
-          }
-        }
+        ...notesRoutes
       }
     });
 
