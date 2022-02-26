@@ -15,10 +15,17 @@ generator client {
 model User {
   id    String @id @default(uuid())
   email String @unique
+  notes Note[]
 }
 
 model Note {
-  id          String  @id @default(uuid())
+  id          String   @id @default(uuid())
   name        String
   description String?
+  ownerId     String
+  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([ownerId])
 }

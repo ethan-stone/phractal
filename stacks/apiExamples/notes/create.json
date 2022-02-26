@@ -1,0 +1,10 @@
+{
+  "body": "{\"name\":\"new note\",\"description\":\"this is a new note\"}",
+  "requestContext": {
+    "authorizer": {
+      "jwt": {
+        "claims": { "cognito:username": "85a5be55-fec8-4bc3-ba9e-04c50e47c858" }
+      }
+    }
+  }
+}

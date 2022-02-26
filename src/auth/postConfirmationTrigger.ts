@@ -1,5 +1,6 @@
 import { PostConfirmationTriggerEvent } from "aws-lambda";
 import { Prisma, PrismaClient } from "@prisma/client";
+import { envName } from "../utils/environment";
 import pino from "pino";
 
 /**
@@ -35,7 +36,7 @@ export async function main(
         {
           service: "auth",
           function: "postConfirmationTrigger",
-          environment: process.env.IS_LOCAL ? "local" : process.env.NODE_ENV
+          environment: envName
         },
         `User created with id ${userAttributes.sub}`
       );
@@ -45,7 +46,7 @@ export async function main(
           {
             service: "auth",
             function: "postConfirmationTrigger",
-            environment: process.env.IS_LOCAL ? "local" : process.env.NODE_ENV
+            environment: envName
           },
           e.message
         );
@@ -54,7 +55,7 @@ export async function main(
           {
             service: "auth",
             function: "postConfirmationTrigger",
-            environment: process.env.IS_LOCAL ? "local" : process.env.NODE_ENV
+            environment: envName
           },
           e.message
         );

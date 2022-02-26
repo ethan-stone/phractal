@@ -1,0 +1,12 @@
+{
+  "pathParameters": {
+    "id": "372de04e-6684-4629-8a64-15015365cfa3"
+  },
+  "requestContext": {
+    "authorizer": {
+      "jwt": {
+        "claims": { "cognito:username": "85a5be55-fec8-4bc3-ba9e-04c50e47c858" }
+      }
+    }
+  }
+}

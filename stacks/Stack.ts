@@ -37,7 +37,21 @@ export default class Stack extends sst.Stack {
         "POST /notes": {
           function: {
             handler: "src/notes/create.main",
-            environment: { notesBucketName: notesBucket.bucketName },
+            environment: { NOTES_BUCKET_NAME: notesBucket.bucketName },
+            permissions: [notesBucket]
+          }
+        },
+        "GET /notes/{id}": {
+          function: {
+            handler: "src/notes/retrieveById.main",
+            environment: { NOTE_BUCKET_NAME: notesBucket.bucketName },
+            permissions: [notesBucket]
+          }
+        },
+        "GET /notes": {
+          function: {
+            handler: "src/notes/retrieve.main",
+            environment: { NOTE_BUCKET_NAME: notesBucket.bucketName },
             permissions: [notesBucket]
           }
         }
