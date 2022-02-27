@@ -5,6 +5,8 @@ import { XIcon } from "@heroicons/react/solid";
 import { useUser } from "../../context/AuthContext";
 import { Note } from "../../types";
 import NoteItem from "./NoteItem";
+import { retrieveNotes } from "../../utils/api";
+import { CognitoUser } from "@aws-amplify/auth";
 
 type NewNoteFormFields = {
   name: string;
@@ -18,31 +20,22 @@ const Notes: React.FC = () => {
   const [newNoteFormOpen, setNewNoteFormOpen] = useState<boolean>(false);
   const [notes, setNotes] = useState<Note[]>([]);
 
-  async function retrieveNotes() {
+  async function _retrieveNotes() {
     setLoading(true);
-    const res = await fetch(
-      "https://kllx4ijj38.execute-api.us-east-1.amazonaws.com/notes",
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user
-            ?.getSignInUserSession()
-            ?.getIdToken()
-            .getJwtToken()}`
-        }
-      }
-    );
 
-    const jsonRes = (await res.json()) as { data: { notes: Note[] } };
+    const res = await retrieveNotes(user as CognitoUser);
 
-    setNotes(jsonRes.data.notes);
+    if (res.data) {
+      setNotes(res.data.notes);
+    } else if (res.error) {
+      // do something later
+    }
 
     setLoading(false);
   }
 
   useEffect(() => {
-    retrieveNotes();
+    _retrieveNotes();
   }, []);
 
   const onSumbit: SubmitHandler<NewNoteFormFields> = async (data) => {
