@@ -7,11 +7,7 @@ import Preview from "./Preview";
 import { retrieveNote, updateNote } from "../../utils/api/notes";
 import { CognitoUser } from "@aws-amplify/auth";
 
-type Props = {
-  id: string;
-};
-
-const NotePage: React.FC<Props> = () => {
+const NotePage: React.FC = () => {
   const { user } = useUser();
   const { id } = useParams<{ id: string }>();
 
