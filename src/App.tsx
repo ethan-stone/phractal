@@ -1,4 +1,4 @@
-import Amplify from "aws-amplify";
+import Amplify from "@aws-amplify/core";
 import AuthContext from "./context/AuthContext";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import RequireAuth from "./features/auth/RequireAuth";
