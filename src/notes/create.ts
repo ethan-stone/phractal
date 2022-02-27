@@ -6,6 +6,18 @@ import {
 import Joi, { ValidationError } from "joi";
 import { response, StatusCode } from "../utils/responses";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import pino from "pino";
+import { Logger } from "../utils/logger";
+
+const logger = new Logger(
+  pino({
+    level: process.env.NODE_ENV === "production" ? "info" : "debug"
+  }),
+  {
+    service: "notes",
+    functionName: "create"
+  }
+);
 
 const s3 = new S3Client({ region: "us-east-1" });
 
@@ -51,6 +63,8 @@ export async function main(
 
     await s3.send(putObjectCommand);
 
+    logger.info(`Note ${newNote.id} created`);
+
     return response({
       statusCode: StatusCode.Success,
       body: {
@@ -60,31 +74,25 @@ export async function main(
       }
     });
   } catch (e: unknown) {
-    if (e instanceof ValidationError) {
+    logger.error(e);
+    if (
+      e instanceof ValidationError ||
+      e instanceof Prisma.PrismaClientKnownRequestError
+    ) {
       return response({
         statusCode: StatusCode.BadRequest,
         body: {
-          message: e.message
-        }
-      });
-    } else if (e instanceof Prisma.PrismaClientKnownRequestError) {
-      return response({
-        statusCode: StatusCode.BadRequest,
-        body: {
-          message: e.message
-        }
-      });
-    } else if (e instanceof Error) {
-      return response({
-        statusCode: StatusCode.InternalError,
-        body: {
-          message: e.message
+          message: "Improper request parameters"
         }
       });
     } else {
       return response({
         statusCode: StatusCode.InternalError,
-        body: {}
+        body: {
+          error: {
+            message: "Something went wrong"
+          }
+        }
       });
     }
   }

@@ -3,9 +3,11 @@ import {
   APIGatewayProxyResultV2
 } from "aws-lambda";
 import { response, StatusCode } from "../utils/responses";
-import Joi from "joi";
+import Joi, { ValidationError } from "joi";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
+import pino from "pino";
+import { Logger } from "../utils/logger";
 
 type PathParameters = {
   id: string;
@@ -22,6 +24,16 @@ const bodySchema = Joi.object({
   description: Joi.string(),
   content: Joi.string()
 });
+
+const logger = new Logger(
+  pino({
+    level: process.env.NODE_ENV === "production" ? "info" : "debug"
+  }),
+  {
+    service: "notes",
+    functionName: "update"
+  }
+);
 
 const prisma = new PrismaClient();
 
@@ -68,15 +80,44 @@ export async function main(
       await s3.send(putObjectCommand);
     }
 
+    /**
+     * Rather than logging the entire content if content was updated
+     * we log whether or not the content was updated
+     */
+    logger.info(
+      `Note ${note.id} updated with updates ${JSON.stringify({
+        ...updates,
+        content: updates.content ? true : false
+      })}`
+    );
+
     return response({
       statusCode: StatusCode.Success,
       body: {}
     });
   } catch (e) {
-    console.log(e);
-    return response({
-      statusCode: StatusCode.InternalError,
-      body: {}
-    });
+    logger.error(e);
+    if (
+      e instanceof ValidationError ||
+      e instanceof Prisma.PrismaClientKnownRequestError
+    ) {
+      return response({
+        statusCode: StatusCode.BadRequest,
+        body: {
+          error: {
+            message: "Improper request parameters"
+          }
+        }
+      });
+    } else {
+      return response({
+        statusCode: StatusCode.InternalError,
+        body: {
+          error: {
+            message: "Something went wrong"
+          }
+        }
+      });
+    }
   }
 }

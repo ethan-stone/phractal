@@ -7,11 +7,17 @@ import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { response, StatusCode } from "../utils/responses";
 import pino from "pino";
 import { Readable } from "stream";
-import { envName } from "../utils/environment";
+import { Logger } from "../utils/logger";
 
-const logger = pino({
-  level: process.env.NODE_ENV === "production" ? "info" : "debug"
-});
+const logger = new Logger(
+  pino({
+    level: process.env.NODE_ENV === "production" ? "info" : "debug"
+  }),
+  {
+    service: "notes",
+    functionName: "retrieveById"
+  }
+);
 
 const s3 = new S3Client({ region: "us-east-1" });
 
@@ -72,11 +78,7 @@ export async function main(
 
     const noteContent = await getObject(`${userId}/${note.id}.md`);
 
-    logger.info({
-      service: "notes",
-      function: "retrieveById",
-      environment: envName
-    });
+    logger.info(`Note ${note.id} retrieved for user ${userId}`);
 
     return response({
       statusCode: StatusCode.Success,
@@ -90,33 +92,25 @@ export async function main(
       }
     });
   } catch (e: unknown) {
+    logger.error(e);
     if (e instanceof Prisma.PrismaClientKnownRequestError) {
-      logger.error(
-        {
-          service: "notes",
-          function: "retrieveById",
-          environment: envName
-        },
-        e.message
-      );
-    } else if (e instanceof Error) {
-      logger.error(
-        {
-          service: "auth",
-          function: "postConfirmationTrigger",
-          environment: envName
-        },
-        e.message
-      );
-    }
-
-    return response({
-      statusCode: StatusCode.InternalError,
-      body: {
-        error: {
-          message: "There was an internal error"
+      return response({
+        statusCode: StatusCode.BadRequest,
+        body: {
+          error: {
+            message: "Improper request parameters"
+          }
         }
-      }
-    });
+      });
+    } else {
+      return response({
+        statusCode: StatusCode.InternalError,
+        body: {
+          error: {
+            message: "Something went wrong"
+          }
+        }
+      });
+    }
   }
 }

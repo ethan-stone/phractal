@@ -1,7 +1,7 @@
 import { PostConfirmationTriggerEvent } from "aws-lambda";
-import { Prisma, PrismaClient } from "@prisma/client";
-import { envName } from "../utils/environment";
+import { PrismaClient } from "@prisma/client";
 import pino from "pino";
+import { Logger } from "../utils/logger";
 
 /**
  * There are more user attributes than this. These are just the
@@ -14,9 +14,15 @@ type UserAttributes = {
 
 const prisma = new PrismaClient();
 
-const logger = pino({
-  level: process.env.NODE_ENV === "production" ? "info" : "debug"
-});
+const logger = new Logger(
+  pino({
+    level: process.env.NODE_ENV === "production" ? "info" : "debug"
+  }),
+  {
+    service: "auth",
+    functionName: "postConfirmationTrigger"
+  }
+);
 
 export async function main(
   event: PostConfirmationTriggerEvent
@@ -32,34 +38,9 @@ export async function main(
         }
       });
 
-      logger.info(
-        {
-          service: "auth",
-          function: "postConfirmationTrigger",
-          environment: envName
-        },
-        `User created with id ${userAttributes.sub}`
-      );
+      logger.info(`User created with id ${userAttributes.sub}`);
     } catch (e: unknown) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        logger.error(
-          {
-            service: "auth",
-            function: "postConfirmationTrigger",
-            environment: envName
-          },
-          e.message
-        );
-      } else if (e instanceof Error) {
-        logger.error(
-          {
-            service: "auth",
-            function: "postConfirmationTrigger",
-            environment: envName
-          },
-          e.message
-        );
-      }
+      logger.error(e);
     }
   }
 

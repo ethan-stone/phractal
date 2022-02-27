@@ -5,10 +5,17 @@ import {
 } from "aws-lambda";
 import { response, StatusCode } from "../utils/responses";
 import pino from "pino";
+import { Logger } from "../utils/logger";
 
-const logger = pino({
-  level: process.env.NODE_ENV === "production" ? "info" : "debug"
-});
+const logger = new Logger(
+  pino({
+    level: process.env.NODE_ENV === "production" ? "info" : "debug"
+  }),
+  {
+    service: "notes",
+    functionName: "retrieve"
+  }
+);
 
 const prisma = new PrismaClient();
 
@@ -32,6 +39,8 @@ export async function main(
       }
     });
 
+    logger.info(`Notes retrieved for user ${userId}`);
+
     return response({
       statusCode: StatusCode.Success,
       body: {
@@ -41,12 +50,25 @@ export async function main(
       }
     });
   } catch (e) {
-    console.log(e);
-    return response({
-      statusCode: StatusCode.InternalError,
-      body: {
-        error: {}
-      }
-    });
+    logger.error(e);
+    if (e instanceof Prisma.PrismaClientKnownRequestError) {
+      return response({
+        statusCode: StatusCode.BadRequest,
+        body: {
+          error: {
+            message: "Improper request parameters"
+          }
+        }
+      });
+    } else {
+      return response({
+        statusCode: StatusCode.InternalError,
+        body: {
+          error: {
+            message: "Something went wrong"
+          }
+        }
+      });
+    }
   }
 }
