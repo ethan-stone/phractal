@@ -8,6 +8,7 @@ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { Prisma, PrismaClient } from "@prisma/client";
 import pino from "pino";
 import { Logger } from "../utils/logger";
+import { AuthorizerClaims } from "../types";
 
 type PathParameters = {
   id: string;
@@ -42,9 +43,8 @@ const s3 = new S3Client({ region: "us-east-1" });
 export async function main(
   event: APIGatewayProxyEventV2WithJWTAuthorizer
 ): Promise<APIGatewayProxyResultV2> {
-  const userId = event.requestContext.authorizer.jwt.claims[
-    "cognito:username"
-  ] as string;
+  const claims = event.requestContext.authorizer.jwt.claims as AuthorizerClaims;
+  const userId = claims.sub;
 
   const { id } = event.pathParameters as PathParameters;
 

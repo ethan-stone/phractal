@@ -8,6 +8,7 @@ import { response, StatusCode } from "../utils/responses";
 import pino from "pino";
 import { Readable } from "stream";
 import { Logger } from "../utils/logger";
+import { AuthorizerClaims } from "../types";
 
 const logger = new Logger(
   pino({
@@ -51,9 +52,8 @@ async function getObject(Key: string): Promise<string> {
 export async function main(
   event: APIGatewayProxyEventV2WithJWTAuthorizer
 ): Promise<APIGatewayProxyResultV2> {
-  const userId = event.requestContext.authorizer.jwt.claims[
-    "cognito:username"
-  ] as string;
+  const claims = event.requestContext.authorizer.jwt.claims as AuthorizerClaims;
+  const userId = claims.sub;
 
   const { id } = event.pathParameters as PathParameters;
 

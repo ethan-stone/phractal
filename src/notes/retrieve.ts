@@ -6,6 +6,7 @@ import {
 import { response, StatusCode } from "../utils/responses";
 import pino from "pino";
 import { Logger } from "../utils/logger";
+import { AuthorizerClaims } from "../types";
 
 const logger = new Logger(
   pino({
@@ -19,12 +20,11 @@ const logger = new Logger(
 
 const prisma = new PrismaClient();
 
-export async function main(
-  event: APIGatewayProxyEventV2WithJWTAuthorizer
-): Promise<APIGatewayProxyResultV2> {
-  const userId = event.requestContext.authorizer.jwt.claims[
-    "cognito:username"
-  ] as string;
+type Event = APIGatewayProxyEventV2WithJWTAuthorizer;
+
+export async function main(event: Event): Promise<APIGatewayProxyResultV2> {
+  const claims = event.requestContext.authorizer.jwt.claims as AuthorizerClaims;
+  const userId = claims.sub;
 
   try {
     const notes = await prisma.note.findMany({

@@ -1,6 +1,5 @@
 import * as sst from "@serverless-stack/resources";
-import * as cognito from "aws-cdk-lib/aws-cognito";
-import { HttpUserPoolAuthorizer } from "@aws-cdk/aws-apigatewayv2-authorizers-alpha";
+import { HttpJwtAuthorizer } from "@aws-cdk/aws-apigatewayv2-authorizers-alpha";
 import { constructNotesRoutes } from "./api/routes/notes";
 
 export default class Stack extends sst.Stack {
@@ -27,19 +26,20 @@ export default class Stack extends sst.Stack {
       permissions: [notesBucket]
     });
 
+    const firebaseAuthorizer = new HttpJwtAuthorizer(
+      "firebase-authorizer",
+      "https://securetoken.google.com/phractal-dev",
+      {
+        identitySource: ["$request.header.Authorization"],
+        jwtAudience: ["phractal-dev"]
+      }
+    );
+
     // Create a HTTP API
     const restApi = new sst.Api(this, "rest-api", {
       defaultPayloadFormatVersion: sst.ApiPayloadFormatVersion.V2,
-      defaultAuthorizer: new HttpUserPoolAuthorizer(
-        "users-authorizer",
-        users.cognitoUserPool as cognito.UserPool,
-        {
-          userPoolClients: [
-            users.cognitoUserPoolClient as cognito.UserPoolClient
-          ]
-        }
-      ),
-      defaultAuthorizationType: sst.ApiAuthorizationType.JWT,
+      defaultAuthorizer: firebaseAuthorizer,
+      defaultAuthorizationType: sst.ApiAuthorizationType.CUSTOM,
       routes: {
         "GET /hello-world": "src/lambda.main",
         ...notesRoutes

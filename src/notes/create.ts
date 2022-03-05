@@ -8,6 +8,7 @@ import { response, StatusCode } from "../utils/responses";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import pino from "pino";
 import { Logger } from "../utils/logger";
+import { AuthorizerClaims } from "../types";
 
 const logger = new Logger(
   pino({
@@ -33,12 +34,11 @@ const bodySchema = Joi.object({
   description: Joi.string()
 }).required();
 
-export async function main(
-  event: APIGatewayProxyEventV2WithJWTAuthorizer
-): Promise<APIGatewayProxyResultV2> {
-  const userId = event.requestContext.authorizer.jwt.claims[
-    "cognito:username"
-  ] as string;
+type Event = APIGatewayProxyEventV2WithJWTAuthorizer;
+
+export async function main(event: Event): Promise<APIGatewayProxyResultV2> {
+  const claims = event.requestContext.authorizer.jwt.claims as AuthorizerClaims;
+  const userId = claims.sub;
 
   try {
     const parsedBody = JSON.parse(event.body || "");
