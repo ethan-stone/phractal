@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Auth, CognitoUser } from "@aws-amplify/auth";
+import { useFirebase } from "../../context/FirebaseContext";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import NavBar from "../common/NavBar";
@@ -14,7 +15,7 @@ type ConfirmFormFields = {
 };
 
 const SignUp: React.FC = () => {
-  const [user, setUser] = useState<CognitoUser | null>(null);
+  const { auth } = useFirebase();
   const [isUserSignedUp, setIsUserSignedUp] = useState<boolean>(false);
   const [isUserConfirmed, setIsUserConfirmed] = useState<boolean>(false);
 
@@ -30,24 +31,8 @@ const SignUp: React.FC = () => {
 
   const onSubmitSignUp: SubmitHandler<SignUpFormFields> = async (data) => {
     try {
-      const signUpResult = await Auth.signUp({
-        username: data.email,
-        password: data.password
-      });
-
-      setUser(signUpResult.user);
+      await createUserWithEmailAndPassword(auth, data.email, data.password);
       setIsUserSignedUp(true);
-    } catch (e) {
-      console.log(e);
-    }
-  };
-
-  const onSubmitConfirm: SubmitHandler<ConfirmFormFields> = async (data) => {
-    try {
-      if (!user) throw new Error("There was an error confirming your identity");
-      await Auth.confirmSignUp(user.getUsername(), data.code);
-
-      navigate("/signin");
     } catch (e) {
       console.log(e);
     }
@@ -74,26 +59,6 @@ const SignUp: React.FC = () => {
                   placeholder={"password"}
                   type="password"
                   {...signUpFormRegister("password")}
-                />
-              </div>
-              <div className="flex flex-col mt-4">
-                <button
-                  type="submit"
-                  className="bg-gray-100 text-gray-500 p-2 mt-2 w-full rounded"
-                >
-                  Sign Up
-                </button>
-              </div>
-            </form>
-          )}
-          {isUserSignedUp && !isUserConfirmed && (
-            <form onSubmit={confirmFormHandleSubmit(onSubmitConfirm)}>
-              <div className="grid grid-cols-1">
-                <input
-                  className={inputStyles}
-                  placeholder={"123456"}
-                  type="text"
-                  {...confirmFormRegister("code")}
                 />
               </div>
               <div className="flex flex-col mt-4">

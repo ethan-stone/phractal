@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
-import { Auth } from "@aws-amplify/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { useFirebase } from "../../context/FirebaseContext";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ReactRouterLocation } from "../../types";
 import NavBar from "../common/NavBar";
@@ -13,14 +14,13 @@ type SignInFormFields = {
 const SignIn: React.FC = () => {
   const { register, handleSubmit } = useForm<SignInFormFields>();
   const [isUserSignedIn, setIsUserSignedIn] = useState<boolean>();
+  const { auth } = useFirebase();
   const navigate = useNavigate();
   const location = useLocation();
 
   const onSubmit: SubmitHandler<SignInFormFields> = async (data) => {
     try {
-      const signInResult = await Auth.signIn(data.email, data.password);
-
-      if (!signInResult) throw new Error("There was a problem logging in");
+      await signInWithEmailAndPassword(auth, data.email, data.password);
 
       const { state } = location as ReactRouterLocation;
 

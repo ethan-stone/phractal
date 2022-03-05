@@ -1,4 +1,4 @@
-import { useUser } from "../../context/AuthContext";
+import { useFirebase } from "../../context/FirebaseContext";
 import { Navigate, useLocation } from "react-router-dom";
 
 type Props = {
@@ -7,7 +7,8 @@ type Props = {
 };
 
 const RequireAuth: React.FC<Props> = ({ children, redirectTo }) => {
-  const { user } = useUser();
+  const { user } = useFirebase();
+
   const location = useLocation();
 
   return user ? (

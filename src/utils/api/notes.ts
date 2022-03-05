@@ -1,7 +1,41 @@
-import { CognitoUser } from "@aws-amplify/auth";
 import { ResponseBody, Note, NoteWithContent } from "../../types";
 
 const baseUrl = "https://kllx4ijj38.execute-api.us-east-1.amazonaws.com";
+
+type CreateNoteResponseData = {
+  id: string;
+};
+
+type CreateNoteResponseError = {
+  message: string;
+};
+
+type CreateNoteResponse = ResponseBody<
+  CreateNoteResponseData,
+  CreateNoteResponseError
+>;
+
+export async function createNote(
+  token: string,
+  name: string,
+  description: string
+): Promise<CreateNoteResponse> {
+  const res = await fetch(`${baseUrl}/notes`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      name,
+      description
+    })
+  });
+
+  const resJson = (await res.json()) as CreateNoteResponse;
+
+  return resJson;
+}
 
 type RetrieveNoteResponseData = {
   note: NoteWithContent;
@@ -17,17 +51,14 @@ type RetrieveNoteResponse = ResponseBody<
 >;
 
 export async function retrieveNote(
-  id: string,
-  user: CognitoUser
+  token: string,
+  id: string
 ): Promise<RetrieveNoteResponse> {
   const res = await fetch(`${baseUrl}/notes/${id}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${user
-        .getSignInUserSession()
-        ?.getIdToken()
-        .getJwtToken()}`
+      Authorization: `Bearer ${token}`
     }
   });
 
@@ -50,16 +81,13 @@ type RetrieveNotesResponse = ResponseBody<
 >;
 
 export async function retrieveNotes(
-  user: CognitoUser
+  token: string
 ): Promise<RetrieveNotesResponse> {
   const res = await fetch(`${baseUrl}/notes`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${user
-        .getSignInUserSession()
-        ?.getIdToken()
-        .getJwtToken()}`
+      Authorization: `Bearer ${token}`
     }
   });
 
@@ -81,18 +109,15 @@ type UpdateNoteRequestBody = {
 };
 
 export async function updateNote(
+  token: string,
   id: string,
-  user: CognitoUser,
   updates: UpdateNoteRequestBody
 ): Promise<UpdateNoteResponse> {
   const res = await fetch(`${baseUrl}/notes/${id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${user
-        .getSignInUserSession()
-        ?.getIdToken()
-        .getJwtToken()}`
+      Authorization: `Bearer ${token}`
     },
     body: JSON.stringify(updates)
   });

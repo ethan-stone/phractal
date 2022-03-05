@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useUser } from "../../context/AuthContext";
 import NavBar from "../common/NavBar";
 import Editor from "./Editor";
 import Preview from "./Preview";
 import { retrieveNote, updateNote } from "../../utils/api/notes";
-import { CognitoUser } from "@aws-amplify/auth";
+import { useFirebase } from "../../context/FirebaseContext";
+import { User } from "firebase/auth";
 
 const NotePage: React.FC = () => {
-  const { user } = useUser();
+  const { getIdToken } = useFirebase();
   const { id } = useParams<{ id: string }>();
 
   const [doc, setDoc] = useState<string>("");
@@ -17,7 +17,9 @@ const NotePage: React.FC = () => {
   async function _retrieveNote() {
     setLoading(true);
 
-    const res = await retrieveNote(id as string, user as CognitoUser);
+    const token = await getIdToken();
+
+    const res = await retrieveNote(token, id as string);
 
     if (res.data) {
       setDoc(res.data.note.content);
@@ -29,7 +31,9 @@ const NotePage: React.FC = () => {
   }
 
   async function _updateNote() {
-    const res = await updateNote(id as string, user as CognitoUser, {
+    const token = await getIdToken();
+
+    const res = await updateNote(token, id as string, {
       content: doc
     });
 

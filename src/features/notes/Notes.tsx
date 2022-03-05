@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import NavBar from "../common/NavBar";
 import { XIcon } from "@heroicons/react/solid";
-import { useUser } from "../../context/AuthContext";
 import { Note } from "../../types";
 import NoteItem from "./NoteItem";
-import { retrieveNotes } from "../../utils/api";
-import { CognitoUser } from "@aws-amplify/auth";
+import { createNote, retrieveNotes } from "../../utils/api";
+import { useFirebase } from "../../context/FirebaseContext";
+import { useNavigate } from "react-router-dom";
 
 type NewNoteFormFields = {
   name: string;
@@ -14,16 +14,19 @@ type NewNoteFormFields = {
 };
 
 const Notes: React.FC = () => {
-  const { user } = useUser();
+  const { getIdToken } = useFirebase();
   const { register, handleSubmit } = useForm<NewNoteFormFields>();
   const [loading, setLoading] = useState<boolean>(false);
   const [newNoteFormOpen, setNewNoteFormOpen] = useState<boolean>(false);
   const [notes, setNotes] = useState<Note[]>([]);
+  const navigate = useNavigate();
 
   async function _retrieveNotes() {
     setLoading(true);
 
-    const res = await retrieveNotes(user as CognitoUser);
+    const token = await getIdToken();
+
+    const res = await retrieveNotes(token);
 
     if (res.data) {
       setNotes(res.data.notes);
@@ -39,23 +42,15 @@ const Notes: React.FC = () => {
   }, []);
 
   const onSumbit: SubmitHandler<NewNoteFormFields> = async (data) => {
-    await fetch(
-      "https://kllx4ijj38.execute-api.us-east-1.amazonaws.com/notes",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user
-            ?.getSignInUserSession()
-            ?.getIdToken()
-            .getJwtToken()}`
-        },
-        body: JSON.stringify({
-          name: data.name,
-          description: data.description
-        })
-      }
-    );
+    const token = await getIdToken();
+
+    const res = await createNote(token, data.name, data.description);
+
+    if (res.data) {
+      navigate(`/notes/${res.data.id}`);
+    } else if (res.error) {
+      console.log(res.error);
+    }
   };
 
   const inputStyles =
