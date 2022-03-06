@@ -12,18 +12,11 @@ generator client {
   previewFeatures = ["referentialIntegrity"]
 }
 
-model User {
-  id    String @id @default(uuid())
-  email String @unique
-  notes Note[]
-}
-
-model Note {
+model Notes {
   id          String   @id @default(uuid())
   name        String
   description String?
   ownerId     String
-  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

@@ -27,7 +27,7 @@ export async function main(event: Event): Promise<APIGatewayProxyResultV2> {
   const userId = claims.sub;
 
   try {
-    const notes = await prisma.note.findMany({
+    const notes = await prisma.notes.findMany({
       where: {
         ownerId: userId
       },

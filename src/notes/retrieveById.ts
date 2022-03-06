@@ -58,7 +58,7 @@ export async function main(
   const { id } = event.pathParameters as PathParameters;
 
   try {
-    const note = await prisma.note.findUnique({
+    const note = await prisma.notes.findUnique({
       where: {
         id
       },

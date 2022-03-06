@@ -60,7 +60,7 @@ export async function main(
      * doing this before updating the s3 object prevents
      * creating an object for a Note that doesn't exist
      */
-    const note = await prisma.note.update({
+    const note = await prisma.notes.update({
       where: {
         id
       },

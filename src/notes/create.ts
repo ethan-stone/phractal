@@ -47,7 +47,7 @@ export async function main(event: Event): Promise<APIGatewayProxyResultV2> {
 
     const { name, description } = parsedBody as RequestBody;
 
-    const newNote = await prisma.note.create({
+    const newNote = await prisma.notes.create({
       data: {
         name,
         description,

@@ -17,6 +17,12 @@ export default class Stack extends sst.Stack {
       }
     });
 
+    const imagesBucket = new sst.Bucket(this, "images-bucket", {
+      s3Bucket: {
+        publicReadAccess: true
+      }
+    });
+
     const notesBucket = new sst.Bucket(this, "notes-bucket");
 
     const notesRoutes = constructNotesRoutes({
