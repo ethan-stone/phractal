@@ -7,6 +7,7 @@ import NoteItem from "./NoteItem";
 import { createNote, retrieveNotes } from "../../utils/api";
 import { useFirebase } from "../../context/FirebaseContext";
 import { useNavigate } from "react-router-dom";
+import { Switch } from "@headlessui/react";
 
 type NewNoteFormFields = {
   name: string;
@@ -19,6 +20,7 @@ const Notes: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [newNoteFormOpen, setNewNoteFormOpen] = useState<boolean>(false);
   const [notes, setNotes] = useState<Note[]>([]);
+  const [isPrivate, setIsPrivate] = useState(false);
   const navigate = useNavigate();
 
   async function _retrieveNotes() {
@@ -44,7 +46,12 @@ const Notes: React.FC = () => {
   const onSumbit: SubmitHandler<NewNoteFormFields> = async (data) => {
     const token = await getIdToken();
 
-    const res = await createNote(token, data.name, data.description);
+    const res = await createNote(
+      token,
+      data.name,
+      data.description,
+      isPrivate ? "PRIVATE" : "PUBLIC"
+    );
 
     if (res.data) {
       navigate(`/notes/${res.data.id}`);
@@ -54,7 +61,7 @@ const Notes: React.FC = () => {
   };
 
   const inputStyles =
-    "p-2 m-2 rounded-lg grow bg-neutral-800 border-white border focus:outline-none focus:border-2 text-white";
+    "p-2 m-2 rounded-md grow bg-neutral-800 focus:outline-none text-white";
 
   return (
     <div className="flex flex-col min-h-screen bg-neutral-800">
@@ -95,9 +102,29 @@ const Notes: React.FC = () => {
                     className={inputStyles}
                     {...register("description")}
                   />
+                  <div className="flex flex-row p-2">
+                    <label className="pr-4 text-neutral-50">Private</label>
+                    <Switch
+                      checked={isPrivate}
+                      onChange={setIsPrivate}
+                      className={`${
+                        isPrivate ? "bg-neutral-600" : "bg-neutral-800"
+                      }
+                    relative inline-flex flex-shrink-0 h-[24px] w-[44px] border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus-visible:ring-2  focus-visible:ring-white focus-visible:ring-opacity-75`}
+                    >
+                      <span className="sr-only">Use setting</span>
+                      <span
+                        aria-hidden="true"
+                        className={`${
+                          isPrivate ? "translate-x-5" : "translate-x-0"
+                        }
+                      pointer-events-none inline-block h-[20px] w-[20px] rounded-full bg-white shadow-lg transform ring-0 transition ease-in-out duration-200`}
+                      />
+                    </Switch>
+                  </div>
                   <button
                     type="submit"
-                    className="bg-white text-gray-800 p-2 rounded-lg m-2 font-bold"
+                    className="bg-neutral-50 text-neutral-800 p-2 rounded-md m-2 font-bold"
                   >
                     Create
                   </button>
@@ -105,12 +132,15 @@ const Notes: React.FC = () => {
               )}
               <div className="flex flex-col mt-4">
                 {notes.map((note, idx) => (
-                  <NoteItem
-                    key={idx}
-                    id={note.id}
-                    name={note.name}
-                    description={note.description}
-                  />
+                  <>
+                    <NoteItem
+                      key={idx}
+                      id={note.id}
+                      name={note.name}
+                      description={note.description}
+                    />
+                    <div className="h-4" />
+                  </>
                 ))}
               </div>
             </div>

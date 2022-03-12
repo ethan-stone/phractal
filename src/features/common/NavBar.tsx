@@ -8,19 +8,26 @@ const NavBar: React.FC = () => {
 
   const navLinkStyles = "mx-2";
   return (
-    <nav className="border-b-2 border-neutral-900 p-3 text-white">
+    <nav className="bg-neutral-800 border-b-2 border-neutral-900 p-3 text-white">
       {!user ? (
-        <button className={navLinkStyles} onClick={() => navigate("/signin")}>
-          Sign In
-        </button>
+        <>
+          <button className={navLinkStyles} onClick={() => navigate("/signin")}>
+            Sign In
+          </button>
+          <button className={navLinkStyles} onClick={() => navigate("/signup")}>
+            Sign Up
+          </button>
+        </>
       ) : (
         <button className={navLinkStyles} onClick={() => signOut(auth)}>
           Logout
         </button>
       )}
-      <Link className={navLinkStyles} to="/notes">
-        Notes
-      </Link>
+      {user && (
+        <Link className={navLinkStyles} to="/notes">
+          Notes
+        </Link>
+      )}
     </nav>
   );
 };

@@ -37,7 +37,7 @@ const Preview: React.FC<Props> = (props) => {
     .processSync(props.doc).result;
 
   return (
-    <div className="flex-[0_0_50%] p-4 overflow-auto markdown-body text-white">
+    <div className="flex-[0_0_49%] p-4 overflow-auto markdown-body text-white">
       {md}
     </div>
   );

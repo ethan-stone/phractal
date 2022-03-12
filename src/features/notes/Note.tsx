@@ -70,6 +70,7 @@ const NotePage: React.FC = () => {
       ) : (
         <div className="flex grow">
           <Editor onChange={handleDocChange} initialDoc={doc} />
+          <div className="flex-[0_0_2%]" />
           <Preview doc={doc} />
         </div>
       )}

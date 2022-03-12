@@ -18,7 +18,8 @@ type CreateNoteResponse = ResponseBody<
 export async function createNote(
   token: string,
   name: string,
-  description: string
+  description: string,
+  visibility: "PUBLIC" | "PRIVATE"
 ): Promise<CreateNoteResponse> {
   const res = await fetch(`${baseUrl}/notes`, {
     method: "POST",
@@ -28,7 +29,8 @@ export async function createNote(
     },
     body: JSON.stringify({
       name,
-      description
+      description,
+      visibility
     })
   });
 

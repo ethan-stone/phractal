@@ -22,7 +22,7 @@ const Editor: React.FC<Props> = (props) => {
       // do nothing for now
     }
   }, [editorView]);
-  return <div className="flex-[0_0_50%] bg-neutral-800" ref={refContainer} />;
+  return <div className="flex-[0_0_49%] bg-neutral-800" ref={refContainer} />;
 };
 
 export default Editor;
