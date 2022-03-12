@@ -12,13 +12,39 @@ generator client {
   previewFeatures = ["referentialIntegrity"]
 }
 
+enum Visibility {
+  PUBLIC
+  PRIVATE
+}
+
 model Notes {
-  id          String   @id @default(uuid())
+  id          String        @id @default(uuid())
   name        String
   description String?
   ownerId     String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  visibility  Visibility
+  permissions Permissions[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 
   @@index([ownerId])
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+  COMMENTER
+  VIEWER
+}
+
+model Permissions {
+  id        String   @id @default(uuid())
+  userId    String
+  noteId    String
+  note      Notes    @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  role      Role
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([noteId, userId])
 }

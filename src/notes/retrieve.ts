@@ -29,7 +29,11 @@ export async function main(event: Event): Promise<APIGatewayProxyResultV2> {
   try {
     const notes = await prisma.notes.findMany({
       where: {
-        ownerId: userId
+        permissions: {
+          some: {
+            userId
+          }
+        }
       },
       select: {
         id: true,

@@ -6,23 +6,6 @@ export default class Stack extends sst.Stack {
   constructor(scope: sst.App, id: string, props?: sst.StackProps) {
     super(scope, id, props);
 
-    const users = new sst.Auth(this, "users", {
-      cognito: {
-        userPool: {
-          signInAliases: { email: true }
-        },
-        triggers: {
-          postConfirmation: "src/auth/postConfirmationTrigger.main"
-        }
-      }
-    });
-
-    const imagesBucket = new sst.Bucket(this, "images-bucket", {
-      s3Bucket: {
-        publicReadAccess: true
-      }
-    });
-
     const notesBucket = new sst.Bucket(this, "notes-bucket");
 
     const notesRoutes = constructNotesRoutes({
@@ -54,10 +37,7 @@ export default class Stack extends sst.Stack {
 
     // Show the endpoint in the output
     this.addOutputs({
-      RESTApiEndpoint: restApi.url,
-      UserPoolId: users.cognitoUserPool?.userPoolId as string,
-      UserPoolClientId: users.cognitoUserPoolClient?.userPoolClientId as string,
-      IdentityPoolId: users.cognitoIdentityPoolId
+      RESTApiEndpoint: restApi.url
     });
   }
 }

@@ -27,11 +27,13 @@ const prisma = new PrismaClient();
 type RequestBody = {
   name: string;
   description?: string;
+  visibility: "PUBLIC" | "PRIVATE";
 };
 
 const bodySchema = Joi.object({
   name: Joi.string().required(),
-  description: Joi.string()
+  description: Joi.string(),
+  visibility: Joi.string().valid("PUBLIC", "PRIVATE").required()
 }).required();
 
 type Event = APIGatewayProxyEventV2WithJWTAuthorizer;
@@ -45,13 +47,22 @@ export async function main(event: Event): Promise<APIGatewayProxyResultV2> {
 
     await bodySchema.validateAsync(parsedBody);
 
-    const { name, description } = parsedBody as RequestBody;
+    const { name, description, visibility } = parsedBody as RequestBody;
 
     const newNote = await prisma.notes.create({
       data: {
         name,
         description,
-        ownerId: userId as string
+        ownerId: userId as string,
+        visibility,
+        permissions: {
+          create: [
+            {
+              userId: userId,
+              role: "ADMIN"
+            }
+          ]
+        }
       }
     });
 

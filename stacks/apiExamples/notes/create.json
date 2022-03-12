@@ -1,9 +1,9 @@
 {
-  "body": "{\"name\":\"new note\",\"description\":\"this is a new note\"}",
+  "body": "{\"name\":\"new note\",\"description\":\"this is a new note\",\"visibility\":\"PUBLIC\"}",
   "requestContext": {
     "authorizer": {
       "jwt": {
-        "claims": { "cognito:username": "85a5be55-fec8-4bc3-ba9e-04c50e47c858" }
+        "claims": { "sub": "1qdnS8prGghxdgM3xnkQo0mgFiW2" }
       }
     }
   }
