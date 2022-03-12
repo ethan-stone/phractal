@@ -54,10 +54,10 @@ const Notes: React.FC = () => {
   };
 
   const inputStyles =
-    "p-2 m-2 rounded-lg grow bg-gray-800 border-white border focus:outline-none focus:border-2 text-white";
+    "p-2 m-2 rounded-lg grow bg-neutral-800 border-white border focus:outline-none focus:border-2 text-white";
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-700">
+    <div className="flex flex-col min-h-screen bg-neutral-800">
       <NavBar />
       {loading ? (
         <div className="flex grow justify-center items-center">Loading</div>
@@ -68,13 +68,13 @@ const Notes: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setNewNoteFormOpen(true)}
-                className="bg-gray-800 text-white p-3 rounded-lg shadow-lg"
+                className="bg-neutral-900 p-3 rounded-lg shadow-lg"
               >
-                New Note
+                <p className="text-white">New Note</p>
               </button>
               {newNoteFormOpen && (
                 <form
-                  className="flex flex-col bg-gray-800 p-4 mt-4 rounded-lg shadow-lg"
+                  className="flex flex-col bg-neutral-900 p-4 mt-4 rounded-lg shadow-lg"
                   onSubmit={handleSubmit(onSumbit)}
                 >
                   <div className="flex flex-row justify-end mb-1">

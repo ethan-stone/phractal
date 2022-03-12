@@ -48,22 +48,22 @@ const NotePage: React.FC = () => {
     _retrieveNote();
   }, []);
 
-  useEffect(() => {
-    const updateInterval = setInterval(() => {
-      _updateNote();
-    }, 5000);
+  // useEffect(() => {
+  //   const updateInterval = setInterval(() => {
+  //     _updateNote();
+  //   }, 5000);
 
-    return () => {
-      clearInterval(updateInterval);
-    };
-  }, [doc]);
+  //   return () => {
+  //     clearInterval(updateInterval);
+  //   };
+  // }, [doc]);
 
   const handleDocChange = useCallback((newDoc) => {
     setDoc(newDoc);
   }, []);
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <div className="flex flex-col min-h-screen bg-neutral-800">
       <NavBar />
       {loading ? (
         <div className="flex grow items-center justify-center">Loading</div>
