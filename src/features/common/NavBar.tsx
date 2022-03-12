@@ -8,7 +8,7 @@ const NavBar: React.FC = () => {
 
   const navLinkStyles = "mx-2";
   return (
-    <nav className="border-b-2 border-gray-800 p-3">
+    <nav className="border-b-2 border-neutral-900 p-3 text-white">
       {!user ? (
         <button className={navLinkStyles} onClick={() => navigate("/signin")}>
           Sign In

@@ -2,6 +2,10 @@ ul {
   @apply list-disc;
 }
 
+ol {
+  @apply list-decimal;
+}
+
 @media (prefers-color-scheme: dark) {
   .markdown-body {
     color-scheme: dark;
