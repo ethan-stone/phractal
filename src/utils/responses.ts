@@ -3,13 +3,19 @@ import { APIGatewayProxyResultV2 } from "aws-lambda";
 export enum StatusCode {
   Success = 200,
   BadRequest = 400,
+  Forbidden = 403,
   NotFound = 404,
   InternalError = 500
 }
 
-type ResponseBody = {
+type GenericObect = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [k: string]: any;
+};
+
+type ResponseBody = {
+  data?: GenericObect;
+  error?: GenericObect;
 };
 
 type ResponseOptions = {

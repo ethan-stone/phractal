@@ -42,6 +42,13 @@ export function constructNotesRoutes(args: Args): {
         environment: args.environment,
         permissions: args.permissions
       }
+    },
+    "POST /notes/{id}/share": {
+      function: {
+        handler: "src/notes/share.main",
+        environment: args.environment,
+        permissions: args.permissions
+      }
     }
   };
 }

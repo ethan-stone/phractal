@@ -6,9 +6,9 @@ import {
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { response, StatusCode } from "../utils/responses";
 import pino from "pino";
-import { Readable } from "stream";
 import { Logger } from "../utils/logger";
 import { AuthorizerClaims } from "../types";
+import { getObject } from "../utils/s3";
 
 const logger = new Logger(
   pino({
@@ -24,41 +24,20 @@ const s3 = new S3Client({ region: "us-east-1" });
 
 const prisma = new PrismaClient();
 
-type PathParameters = {
-  id: string;
-};
-
-async function getObject(Key: string): Promise<string> {
-  const getObjectCommand = new GetObjectCommand({
-    Key,
-    Bucket: process.env.NOTES_BUCKET_NAME
-  });
-
-  const noteObject = await s3.send(getObjectCommand);
-
-  return new Promise((resolve, reject) => {
-    const responseDataChunks: string[] = [];
-
-    const noteBody = noteObject.Body as Readable;
-
-    noteBody.once("error", (err) => reject(err));
-
-    noteBody.on("data", (chunk) => responseDataChunks.push(chunk));
-
-    noteBody.once("end", () => resolve(responseDataChunks.join("")));
-  });
+interface Event extends APIGatewayProxyEventV2WithJWTAuthorizer {
+  pathParameters: {
+    id: string;
+  };
 }
 
-export async function main(
-  event: APIGatewayProxyEventV2WithJWTAuthorizer
-): Promise<APIGatewayProxyResultV2> {
+export async function main(event: Event): Promise<APIGatewayProxyResultV2> {
   const claims = event.requestContext.authorizer.jwt.claims as AuthorizerClaims;
   const userId = claims.sub;
 
-  const { id } = event.pathParameters as PathParameters;
+  const { id } = event.pathParameters;
 
   try {
-    const note = await prisma.notes.findUnique({
+    const note = await prisma.note.findUnique({
       where: {
         id
       },
@@ -76,7 +55,13 @@ export async function main(
         body: {}
       });
 
-    const noteContent = await getObject(`${userId}/${note.id}.md`);
+    const noteContent = await getObject(
+      s3,
+      new GetObjectCommand({
+        Key: `${userId}/${note.id}.md`,
+        Bucket: process.env.NOTES_BUCKET_NAME
+      })
+    );
 
     logger.info(`Note ${note.id} retrieved for user ${userId}`);
 

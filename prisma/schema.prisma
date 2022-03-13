@@ -12,20 +12,29 @@ generator client {
   previewFeatures = ["referentialIntegrity"]
 }
 
+model User {
+  id        String   @id
+  email     String
+  notes     Note[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 enum Visibility {
   PUBLIC
   PRIVATE
 }
 
-model Notes {
-  id          String        @id @default(uuid())
+model Note {
+  id          String       @id @default(uuid())
   name        String
   description String?
   ownerId     String
+  owner       User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   visibility  Visibility
-  permissions Permissions[]
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  permissions Permission[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
   @@index([ownerId])
 }
@@ -37,14 +46,21 @@ enum Role {
   VIEWER
 }
 
-model Permissions {
+model Permission {
   id        String   @id @default(uuid())
   userId    String
   noteId    String
-  note      Notes    @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
   role      Role
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([userId, noteId])
   @@index([noteId, userId])
+}
+
+model ApiKey {
+  id   String @id
+  salt String
+  key  String
 }

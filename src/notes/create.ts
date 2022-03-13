@@ -40,7 +40,7 @@ type Event = APIGatewayProxyEventV2WithJWTAuthorizer;
 
 export async function main(event: Event): Promise<APIGatewayProxyResultV2> {
   const claims = event.requestContext.authorizer.jwt.claims as AuthorizerClaims;
-  const userId = claims.sub;
+  const { sub: userId } = claims;
 
   try {
     const parsedBody = JSON.parse(event.body || "");
@@ -49,7 +49,7 @@ export async function main(event: Event): Promise<APIGatewayProxyResultV2> {
 
     const { name, description, visibility } = parsedBody as RequestBody;
 
-    const newNote = await prisma.notes.create({
+    const newNote = await prisma.note.create({
       data: {
         name,
         description,
@@ -93,7 +93,9 @@ export async function main(event: Event): Promise<APIGatewayProxyResultV2> {
       return response({
         statusCode: StatusCode.BadRequest,
         body: {
-          message: "Improper request parameters"
+          error: {
+            message: "Improper request parameters"
+          }
         }
       });
     } else {
