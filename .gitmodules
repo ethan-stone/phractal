@@ -4,3 +4,6 @@
 [submodule "koch"]
 	path = koch
 	url = git@github.com:ethan-stone/koch.git
+[submodule "rauzy"]
+	path = rauzy
+	url = git@github.com:ethan-stone/rauzy.git
