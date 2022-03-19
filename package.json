@@ -1,0 +1,26 @@
+{
+  "name": "phractal",
+  "version": "1.0.0",
+  "description": "## structure",
+  "main": "index.js",
+  "devDependencies": {
+    "turbo": "^1.1.6"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ethan-stone/phractal.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ethan-stone/phractal/issues"
+  },
+  "homepage": "https://github.com/ethan-stone/phractal#readme",
+  "workspaces": [
+    "packages/*",
+    "apps/**/*"
+  ]
+}

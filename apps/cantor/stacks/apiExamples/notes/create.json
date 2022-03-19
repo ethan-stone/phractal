@@ -1,0 +1,10 @@
+{
+  "body": "{\"name\":\"new note\",\"description\":\"this is a new note\",\"visibility\":\"PUBLIC\"}",
+  "requestContext": {
+    "authorizer": {
+      "jwt": {
+        "claims": { "sub": "1qdnS8prGghxdgM3xnkQo0mgFiW2" }
+      }
+    }
+  }
+}
