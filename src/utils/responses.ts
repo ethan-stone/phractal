@@ -11,7 +11,8 @@ export enum StatusCode {
 export enum ErrorCode {
   InternalError = "INTERNAL_ERROR",
   ValidationError = "VALIDATION_ERROR",
-  NotFoundError = "NOT_FOUND_ERROR"
+  NotFound = "NOT_FOUND",
+  Forbidden = "FORBIDDEN"
 }
 
 interface ErrorData {
@@ -31,7 +32,11 @@ export interface InternalErrorData extends ErrorData {
   message: "Something went wrong";
 }
 
-export interface NotFoundErrorData extends ErrorData {
+export interface NotFoundData extends ErrorData {
+  message: string;
+}
+
+export interface ForbiddenData extends ErrorData {
   message: string;
 }
 

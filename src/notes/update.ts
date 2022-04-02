@@ -5,15 +5,16 @@ import {
 import {
   ErrorCode,
   errorResponse,
+  ForbiddenData,
   InternalErrorData,
-  NotFoundErrorData,
+  NotFoundData,
   StatusCode,
   successResponse,
   ValidationErrorData
 } from "../utils/responses";
 import { PrismaClient, Prisma } from "@prisma/client";
 import { createLogger } from "../utils/logger";
-import { EmptyObject, Visibility } from "../types";
+import { AuthorizerClaims, EmptyObject, Visibility, Role } from "../types";
 import {
   ajv,
   DefinedError,
@@ -55,12 +56,73 @@ const logger = createLogger({
 
 const prisma = new PrismaClient();
 
-export async function main(
-  event: APIGatewayProxyEventV2WithJWTAuthorizer
-): Promise<APIGatewayProxyResultV2> {
+type Event = APIGatewayProxyEventV2WithJWTAuthorizer;
+
+export async function main(event: Event): Promise<APIGatewayProxyResultV2> {
   const { id } = event.pathParameters as PathParameters;
+  const claims = event.requestContext.authorizer.jwt.claims as AuthorizerClaims;
+  const { sub: userId } = claims;
 
   try {
+    const note = await prisma.note.findUnique({
+      where: {
+        id
+      }
+    });
+
+    if (!note) {
+      return errorResponse<NotFoundData>({
+        statusCode: StatusCode.NotFound,
+        errorData: {
+          code: ErrorCode.NotFound,
+          message: `Note with id=${id} not found`
+        }
+      });
+    }
+
+    const permission = await prisma.permission.findUnique({
+      where: {
+        userId_noteId: {
+          userId: userId,
+          noteId: id
+        }
+      }
+    });
+
+    if (note.visibility === Visibility.PRIVATE) {
+      if (!permission) {
+        return errorResponse<NotFoundData>({
+          statusCode: StatusCode.NotFound,
+          errorData: {
+            code: ErrorCode.NotFound,
+            message: `Note with id=${id} not found`
+          }
+        });
+      }
+      if (permission.role !== Role.ADMIN && permission.role !== Role.EDITOR) {
+        return errorResponse<ForbiddenData>({
+          statusCode: StatusCode.Forbidden,
+          errorData: {
+            code: ErrorCode.Forbidden,
+            message: "Not allowed to edit this resource"
+          }
+        });
+      }
+    } else {
+      if (
+        !permission ||
+        (permission.role !== Role.ADMIN && permission.role !== Role.EDITOR)
+      ) {
+        return errorResponse<ForbiddenData>({
+          statusCode: StatusCode.Forbidden,
+          errorData: {
+            code: ErrorCode.Forbidden,
+            message: "Not allowed to edit this resource"
+          }
+        });
+      }
+    }
+
     const parsedBody = JSON.parse(event.body || "");
 
     if (!validate(parsedBody)) {
@@ -76,7 +138,7 @@ export async function main(
 
     const updates = parsedBody as RequestBody;
 
-    const note = await prisma.note.update({
+    await prisma.note.update({
       where: {
         id
       },
@@ -106,10 +168,10 @@ export async function main(
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError) {
       if (e.code === "P2025") {
-        return errorResponse<NotFoundErrorData>({
+        return errorResponse<NotFoundData>({
           statusCode: StatusCode.NotFound,
           errorData: {
-            code: ErrorCode.NotFoundError,
+            code: ErrorCode.NotFound,
             message: `Note with id=${id} not found`
           }
         });

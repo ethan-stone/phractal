@@ -7,11 +7,12 @@ import {
   ErrorCode,
   errorResponse,
   InternalErrorData,
+  NotFoundData,
   StatusCode,
   successResponse
 } from "../utils/responses";
 import { createLogger } from "../utils/logger";
-import { AuthorizerClaims, EmptyObject, Note } from "../types";
+import { AuthorizerClaims, Note } from "../types";
 
 const logger = createLogger({
   service: "notes",
@@ -40,9 +41,12 @@ export async function main(event: Event): Promise<APIGatewayProxyResultV2> {
     });
 
     if (!note)
-      return errorResponse<EmptyObject>({
+      return errorResponse<NotFoundData>({
         statusCode: StatusCode.NotFound,
-        errorData: {}
+        errorData: {
+          code: ErrorCode.NotFound,
+          message: `Note with id=${id} not found`
+        }
       });
 
     logger.info(`Note ${note.id} retrieved for user ${userId}`);
