@@ -11,7 +11,6 @@ import {
   successResponse,
   ValidationErrorData
 } from "../utils/responses";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { createLogger } from "../utils/logger";
 import { AuthorizerClaims } from "../types";
 import {
@@ -25,8 +24,6 @@ const logger = createLogger({
   service: "notes",
   functionName: "create"
 });
-
-const s3 = new S3Client({ region: "us-east-1" });
 
 const prisma = new PrismaClient();
 
@@ -74,6 +71,7 @@ export async function main(event: Event): Promise<APIGatewayProxyResultV2> {
       data: {
         name,
         description,
+        content: "",
         ownerId: userId as string,
         visibility,
         permissions: {
@@ -86,14 +84,6 @@ export async function main(event: Event): Promise<APIGatewayProxyResultV2> {
         }
       }
     });
-
-    const putObjectCommand = new PutObjectCommand({
-      Key: `${userId}/${newNote.id}.md`,
-      Body: "# Hello World",
-      Bucket: process.env.NOTES_BUCKET_NAME
-    });
-
-    await s3.send(putObjectCommand);
 
     logger.info(`Note ${newNote.id} created`);
 

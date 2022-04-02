@@ -10,10 +10,9 @@ import {
   successResponse,
   ValidationErrorData
 } from "../utils/responses";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { PrismaClient } from "@prisma/client";
 import { createLogger } from "../utils/logger";
-import { AuthorizerClaims, EmptyObject } from "../types";
+import { EmptyObject, Visibility } from "../types";
 import {
   ajv,
   DefinedError,
@@ -29,6 +28,7 @@ type RequestBody = {
   name?: string;
   description?: string;
   content?: string;
+  visibility?: Visibility;
 };
 
 const schema: JSONSchemaType<RequestBody> = {
@@ -36,7 +36,12 @@ const schema: JSONSchemaType<RequestBody> = {
   properties: {
     name: { type: "string", nullable: true },
     description: { type: "string", nullable: true },
-    content: { type: "string", nullable: true }
+    content: { type: "string", nullable: true },
+    visibility: {
+      type: "string",
+      enum: ["PUBLIC", "PRIVATE"],
+      nullable: true
+    }
   }
 };
 
@@ -49,14 +54,9 @@ const logger = createLogger({
 
 const prisma = new PrismaClient();
 
-const s3 = new S3Client({ region: "us-east-1" });
-
 export async function main(
   event: APIGatewayProxyEventV2WithJWTAuthorizer
 ): Promise<APIGatewayProxyResultV2> {
-  const claims = event.requestContext.authorizer.jwt.claims as AuthorizerClaims;
-  const userId = claims.sub;
-
   const { id } = event.pathParameters as PathParameters;
 
   try {
@@ -75,30 +75,17 @@ export async function main(
 
     const updates = parsedBody as RequestBody;
 
-    /**
-     * this will reject if no Note record is found
-     * doing this before updating the s3 object prevents
-     * creating an object for a Note that doesn't exist
-     */
     const note = await prisma.note.update({
       where: {
         id
       },
       data: {
         name: updates.name,
-        description: updates.description
+        description: updates.description,
+        content: updates.content,
+        visibility: updates.visibility
       }
     });
-
-    if (updates.content) {
-      const putObjectCommand = new PutObjectCommand({
-        Key: `${userId}/${note.id}.md`,
-        Body: updates.content,
-        Bucket: process.env.NOTES_BUCKET_NAME
-      });
-
-      await s3.send(putObjectCommand);
-    }
 
     /**
      * Rather than logging the entire content if content was updated

@@ -28,6 +28,7 @@ enum Visibility {
 model Note {
   id          String       @id @default(uuid())
   name        String
+  content     String       @db.MediumText
   description String?
   ownerId     String
   owner       User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)

@@ -1,4 +1,4 @@
-import { Note, PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import {
   APIGatewayProxyEventV2WithJWTAuthorizer,
   APIGatewayProxyResultV2
@@ -34,13 +34,22 @@ export async function main(event: Event): Promise<APIGatewayProxyResultV2> {
             userId
           }
         }
+      },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        ownerId: true,
+        visibility: true,
+        createdAt: true,
+        updatedAt: true
       }
     });
 
     logger.info(`Notes retrieved for user ${userId}`);
 
     return successResponse<{
-      notes: Array<Note>;
+      notes: typeof notes;
     }>({
       statusCode: StatusCode.Success,
       successData: {

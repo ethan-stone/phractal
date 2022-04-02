@@ -3,7 +3,6 @@ import {
   APIGatewayProxyEventV2WithJWTAuthorizer,
   APIGatewayProxyResultV2
 } from "aws-lambda";
-import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import {
   ErrorCodes,
   errorResponse,
@@ -12,15 +11,12 @@ import {
   successResponse
 } from "../utils/responses";
 import { createLogger } from "../utils/logger";
-import { AuthorizerClaims, EmptyObject, NoteWithContent } from "../types";
-import { getObject } from "../utils/s3";
+import { AuthorizerClaims, EmptyObject, Note } from "../types";
 
 const logger = createLogger({
   service: "notes",
   functionName: "retrieveById"
 });
-
-const s3 = new S3Client({ region: "us-east-1" });
 
 const prisma = new PrismaClient();
 
@@ -49,23 +45,12 @@ export async function main(event: Event): Promise<APIGatewayProxyResultV2> {
         errorData: {}
       });
 
-    const noteContent = await getObject(
-      s3,
-      new GetObjectCommand({
-        Key: `${userId}/${note.id}.md`,
-        Bucket: process.env.NOTES_BUCKET_NAME
-      })
-    );
-
     logger.info(`Note ${note.id} retrieved for user ${userId}`);
 
-    return successResponse<{ note: NoteWithContent }>({
+    return successResponse<{ note: Note }>({
       statusCode: StatusCode.Success,
       successData: {
-        note: {
-          content: noteContent,
-          ...note
-        }
+        note
       }
     });
   } catch (e: unknown) {

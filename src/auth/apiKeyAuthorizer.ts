@@ -12,7 +12,6 @@ type Event = APIGatewayRequestAuthorizerEventV2;
 export async function main(
   event: Event
 ): Promise<APIGatewaySimpleAuthorizerResult> {
-  console.log(event);
   const headers = event.headers;
   if (!headers) {
     return {

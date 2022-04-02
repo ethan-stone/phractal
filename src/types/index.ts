@@ -21,7 +21,3 @@ export {
   Visibility,
   Role
 } from "@prisma/client";
-
-import { Note } from "@prisma/client";
-
-export type NoteWithContent = Note & { content: string };
