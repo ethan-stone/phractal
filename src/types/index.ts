@@ -10,3 +10,18 @@ export type AuthorizerClaims = {
   sub: string;
   user_id: string;
 };
+
+export type EmptyObject = Record<string, never>;
+
+export {
+  Note,
+  ApiKey,
+  Permission,
+  User,
+  Visibility,
+  Role
+} from "@prisma/client";
+
+import { Note } from "@prisma/client";
+
+export type NoteWithContent = Note & { content: string };

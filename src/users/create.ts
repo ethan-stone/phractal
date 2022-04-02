@@ -1,20 +1,26 @@
-import { Prisma, PrismaClient } from "@prisma/client";
-import { ValidationError } from "apollo-server-lambda";
+import { PrismaClient } from "@prisma/client";
 import { APIGatewayProxyEventV2WithLambdaAuthorizer } from "aws-lambda";
-import Joi from "joi";
-import pino from "pino";
-import { Logger } from "../utils/logger";
-import { response, StatusCode } from "../utils/responses";
+import { EmptyObject } from "../types";
+import { createLogger } from "../utils/logger";
+import {
+  ErrorCodes,
+  errorResponse,
+  InternalErrorData,
+  StatusCode,
+  successResponse,
+  ValidationErrorData
+} from "../utils/responses";
+import {
+  ajv,
+  JSONSchemaType,
+  DefinedError,
+  handleValidationError
+} from "../utils/validator";
 
-const logger = new Logger(
-  pino({
-    level: process.env.NODE_ENV === "production" ? "info" : "debug"
-  }),
-  {
-    service: "notes",
-    functionName: "create"
-  }
-);
+const logger = createLogger({
+  service: "notes",
+  functionName: "create"
+});
 
 const prisma = new PrismaClient();
 
@@ -23,10 +29,16 @@ type RequestBody = {
   email: string;
 };
 
-const bodySchema = Joi.object({
-  id: Joi.string().required(),
-  email: Joi.string().email().required()
-}).required();
+const schema: JSONSchemaType<RequestBody> = {
+  type: "object",
+  properties: {
+    id: { type: "string" },
+    email: { type: "string" }
+  },
+  required: ["id", "email"]
+};
+
+const validate = ajv.compile(schema);
 
 type Event = APIGatewayProxyEventV2WithLambdaAuthorizer<Record<string, never>>;
 
@@ -34,7 +46,16 @@ export async function main(event: Event) {
   try {
     const parsedBody = JSON.parse(event.body || "");
 
-    await bodySchema.validateAsync(parsedBody);
+    if (!validate(parsedBody)) {
+      logger.error(validate.errors);
+      const validationErrorData = handleValidationError(
+        validate.errors as DefinedError[]
+      );
+      return errorResponse<ValidationErrorData>({
+        statusCode: StatusCode.BadRequest,
+        errorData: validationErrorData
+      });
+    }
 
     const { id, email } = parsedBody as RequestBody;
 
@@ -47,33 +68,19 @@ export async function main(event: Event) {
 
     logger.info(`User with id ${id} created`);
 
-    return response({
+    return successResponse<EmptyObject>({
       statusCode: StatusCode.Success,
-      body: {
-        data: {}
-      }
+      successData: {}
     });
   } catch (e: unknown) {
     logger.error(e);
 
-    if (e instanceof ValidationError || Prisma.PrismaClientKnownRequestError) {
-      return response({
-        statusCode: StatusCode.BadRequest,
-        body: {
-          error: {
-            message: "Improper request parameters"
-          }
-        }
-      });
-    } else {
-      return response({
-        statusCode: StatusCode.InternalError,
-        body: {
-          error: {
-            message: "Something went wrong"
-          }
-        }
-      });
-    }
+    return errorResponse<InternalErrorData>({
+      statusCode: StatusCode.InternalError,
+      errorData: {
+        code: ErrorCodes.InternalError,
+        message: "Something went wrong"
+      }
+    });
   }
 }

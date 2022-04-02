@@ -1,4 +1,4 @@
-import { Logger as PinoLogger } from "pino";
+import pino, { Logger as PinoLogger } from "pino";
 
 const environment = process.env.IS_LOCAL
   ? "local"
@@ -50,4 +50,9 @@ export class Logger {
       err
     });
   }
+}
+
+export function createLogger(props: LoggerProps) {
+  const level = process.env.NODE_ENV === "production" ? "info" : "debug";
+  return new Logger(pino({ level: level }), props);
 }

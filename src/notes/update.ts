@@ -2,13 +2,24 @@ import {
   APIGatewayProxyEventV2WithJWTAuthorizer,
   APIGatewayProxyResultV2
 } from "aws-lambda";
-import { response, StatusCode } from "../utils/responses";
-import Joi, { ValidationError } from "joi";
+import {
+  ErrorCodes,
+  errorResponse,
+  InternalErrorData,
+  StatusCode,
+  successResponse,
+  ValidationErrorData
+} from "../utils/responses";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import { Prisma, PrismaClient } from "@prisma/client";
-import pino from "pino";
-import { Logger } from "../utils/logger";
-import { AuthorizerClaims } from "../types";
+import { PrismaClient } from "@prisma/client";
+import { createLogger } from "../utils/logger";
+import { AuthorizerClaims, EmptyObject } from "../types";
+import {
+  ajv,
+  DefinedError,
+  handleValidationError,
+  JSONSchemaType
+} from "../utils/validator";
 
 type PathParameters = {
   id: string;
@@ -20,21 +31,21 @@ type RequestBody = {
   content?: string;
 };
 
-const bodySchema = Joi.object({
-  name: Joi.string(),
-  description: Joi.string(),
-  content: Joi.string()
-});
-
-const logger = new Logger(
-  pino({
-    level: process.env.NODE_ENV === "production" ? "info" : "debug"
-  }),
-  {
-    service: "notes",
-    functionName: "update"
+const schema: JSONSchemaType<RequestBody> = {
+  type: "object",
+  properties: {
+    name: { type: "string", nullable: true },
+    description: { type: "string", nullable: true },
+    content: { type: "string", nullable: true }
   }
-);
+};
+
+const validate = ajv.compile(schema);
+
+const logger = createLogger({
+  service: "notes",
+  functionName: "update"
+});
 
 const prisma = new PrismaClient();
 
@@ -51,7 +62,16 @@ export async function main(
   try {
     const parsedBody = JSON.parse(event.body || "");
 
-    await bodySchema.validateAsync(parsedBody);
+    if (!validate(parsedBody)) {
+      logger.error(validate.errors);
+      const validationErrorData = handleValidationError(
+        validate.errors as DefinedError[]
+      );
+      return errorResponse<ValidationErrorData>({
+        statusCode: StatusCode.BadRequest,
+        errorData: validationErrorData
+      });
+    }
 
     const updates = parsedBody as RequestBody;
 
@@ -60,7 +80,7 @@ export async function main(
      * doing this before updating the s3 object prevents
      * creating an object for a Note that doesn't exist
      */
-    const note = await prisma.notes.update({
+    const note = await prisma.note.update({
       where: {
         id
       },
@@ -91,33 +111,18 @@ export async function main(
       })}`
     );
 
-    return response({
+    return successResponse<EmptyObject>({
       statusCode: StatusCode.Success,
-      body: {}
+      successData: {}
     });
   } catch (e) {
     logger.error(e);
-    if (
-      e instanceof ValidationError ||
-      e instanceof Prisma.PrismaClientKnownRequestError
-    ) {
-      return response({
-        statusCode: StatusCode.BadRequest,
-        body: {
-          error: {
-            message: "Improper request parameters"
-          }
-        }
-      });
-    } else {
-      return response({
-        statusCode: StatusCode.InternalError,
-        body: {
-          error: {
-            message: "Something went wrong"
-          }
-        }
-      });
-    }
+    return errorResponse<InternalErrorData>({
+      statusCode: StatusCode.InternalError,
+      errorData: {
+        code: ErrorCodes.InternalError,
+        message: "Something went wrong"
+      }
+    });
   }
 }

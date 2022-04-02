@@ -8,27 +8,59 @@ export enum StatusCode {
   InternalError = 500
 }
 
-type GenericObect = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [k: string]: any;
+export enum ErrorCodes {
+  InternalError = "INTERNAL_ERROR",
+  ValidationError = "VALIDATION_ERROR"
+}
+
+interface ErrorData {
+  code: string;
+}
+
+export type ValidationError = {
+  field: string;
+  message?: string;
 };
 
-type ResponseBody = {
-  data?: GenericObect;
-  error?: GenericObect;
-};
+export interface ValidationErrorData extends ErrorData {
+  info: Array<ValidationError>;
+}
 
-type ResponseOptions = {
+export interface InternalErrorData extends ErrorData {
+  code: ErrorCodes.InternalError;
+  message: "Something went wrong";
+}
+
+type ErrorResponseData<T> = {
   statusCode: StatusCode;
-  body: ResponseBody;
+  errorData: T;
 };
 
-export function response({
+export function errorResponse<T>({
   statusCode,
-  body
-}: ResponseOptions): APIGatewayProxyResultV2 {
+  errorData
+}: ErrorResponseData<T>): APIGatewayProxyResultV2 {
   return {
-    statusCode: statusCode,
-    body: JSON.stringify(body)
+    statusCode,
+    body: JSON.stringify({
+      error: errorData
+    })
+  };
+}
+
+type SuccessResponseData<T> = {
+  statusCode: StatusCode;
+  successData: T;
+};
+
+export function successResponse<T>({
+  statusCode,
+  successData
+}: SuccessResponseData<T>): APIGatewayProxyResultV2 {
+  return {
+    statusCode,
+    body: JSON.stringify({
+      data: successData
+    })
   };
 }
