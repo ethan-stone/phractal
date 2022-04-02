@@ -8,13 +8,14 @@ export enum StatusCode {
   InternalError = 500
 }
 
-export enum ErrorCodes {
+export enum ErrorCode {
   InternalError = "INTERNAL_ERROR",
-  ValidationError = "VALIDATION_ERROR"
+  ValidationError = "VALIDATION_ERROR",
+  NotFoundError = "NOT_FOUND_ERROR"
 }
 
 interface ErrorData {
-  code: string;
+  code: ErrorCode;
 }
 
 export type ValidationError = {
@@ -27,8 +28,11 @@ export interface ValidationErrorData extends ErrorData {
 }
 
 export interface InternalErrorData extends ErrorData {
-  code: ErrorCodes.InternalError;
   message: "Something went wrong";
+}
+
+export interface NotFoundErrorData extends ErrorData {
+  message: string;
 }
 
 type ErrorResponseData<T> = {

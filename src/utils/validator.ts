@@ -1,5 +1,5 @@
 import Ajv, { DefinedError } from "ajv";
-import { ErrorCodes, ValidationError, ValidationErrorData } from "./responses";
+import { ErrorCode, ValidationError, ValidationErrorData } from "./responses";
 export { JSONSchemaType, DefinedError } from "ajv";
 
 export function handleValidationError(
@@ -13,7 +13,7 @@ export function handleValidationError(
     });
   }
   return {
-    code: ErrorCodes.ValidationError,
+    code: ErrorCode.ValidationError,
     info: validationErrors
   };
 }

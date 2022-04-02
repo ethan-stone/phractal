@@ -3,7 +3,7 @@ import { APIGatewayProxyEventV2WithLambdaAuthorizer } from "aws-lambda";
 import { EmptyObject } from "../types";
 import { createLogger } from "../utils/logger";
 import {
-  ErrorCodes,
+  ErrorCode,
   errorResponse,
   InternalErrorData,
   StatusCode,
@@ -78,7 +78,7 @@ export async function main(event: Event) {
     return errorResponse<InternalErrorData>({
       statusCode: StatusCode.InternalError,
       errorData: {
-        code: ErrorCodes.InternalError,
+        code: ErrorCode.InternalError,
         message: "Something went wrong"
       }
     });

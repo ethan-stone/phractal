@@ -3,14 +3,15 @@ import {
   APIGatewayProxyResultV2
 } from "aws-lambda";
 import {
-  ErrorCodes,
+  ErrorCode,
   errorResponse,
   InternalErrorData,
+  NotFoundErrorData,
   StatusCode,
   successResponse,
   ValidationErrorData
 } from "../utils/responses";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import { createLogger } from "../utils/logger";
 import { EmptyObject, Visibility } from "../types";
 import {
@@ -103,11 +104,21 @@ export async function main(
       successData: {}
     });
   } catch (e) {
-    logger.error(e);
+    if (e instanceof Prisma.PrismaClientKnownRequestError) {
+      if (e.code === "P2025") {
+        return errorResponse<NotFoundErrorData>({
+          statusCode: StatusCode.NotFound,
+          errorData: {
+            code: ErrorCode.NotFoundError,
+            message: `Note with id=${id} not found`
+          }
+        });
+      }
+    }
     return errorResponse<InternalErrorData>({
       statusCode: StatusCode.InternalError,
       errorData: {
-        code: ErrorCodes.InternalError,
+        code: ErrorCode.InternalError,
         message: "Something went wrong"
       }
     });
