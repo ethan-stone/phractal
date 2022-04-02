@@ -1,12 +1,14 @@
-import { PrismaClient, Prisma } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import {
   APIGatewayProxyEventV2WithJWTAuthorizer,
   APIGatewayProxyResultV2
 } from "aws-lambda";
+import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { response, StatusCode } from "../utils/responses";
 import pino from "pino";
 import { Logger } from "../utils/logger";
 import { AuthorizerClaims } from "../types";
+import { getObject } from "../utils/s3";
 
 const logger = new Logger(
   pino({
@@ -14,26 +16,30 @@ const logger = new Logger(
   }),
   {
     service: "notes",
-    functionName: "retrieve"
+    functionName: "retrieveById"
   }
 );
 
+const s3 = new S3Client({ region: "us-east-1" });
+
 const prisma = new PrismaClient();
 
-type Event = APIGatewayProxyEventV2WithJWTAuthorizer;
+interface Event extends APIGatewayProxyEventV2WithJWTAuthorizer {
+  pathParameters: {
+    id: string;
+  };
+}
 
 export async function main(event: Event): Promise<APIGatewayProxyResultV2> {
   const claims = event.requestContext.authorizer.jwt.claims as AuthorizerClaims;
   const userId = claims.sub;
 
+  const { id } = event.pathParameters;
+
   try {
-    const notes = await prisma.note.findMany({
+    const note = await prisma.note.findUnique({
       where: {
-        permissions: {
-          some: {
-            userId
-          }
-        }
+        id
       },
       select: {
         id: true,
@@ -43,17 +49,34 @@ export async function main(event: Event): Promise<APIGatewayProxyResultV2> {
       }
     });
 
-    logger.info(`Notes retrieved for user ${userId}`);
+    if (!note)
+      return response({
+        statusCode: StatusCode.NotFound,
+        body: {}
+      });
+
+    const noteContent = await getObject(
+      s3,
+      new GetObjectCommand({
+        Key: `${userId}/${note.id}.md`,
+        Bucket: process.env.NOTES_BUCKET_NAME
+      })
+    );
+
+    logger.info(`Note ${note.id} retrieved for user ${userId}`);
 
     return response({
       statusCode: StatusCode.Success,
       body: {
         data: {
-          notes
+          note: {
+            content: noteContent,
+            ...note
+          }
         }
       }
     });
-  } catch (e) {
+  } catch (e: unknown) {
     logger.error(e);
     if (e instanceof Prisma.PrismaClientKnownRequestError) {
       return response({

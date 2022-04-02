@@ -24,14 +24,14 @@ export function constructNotesRoutes(args: Args): {
     },
     "GET /notes/{id}": {
       function: {
-        handler: "src/notes/retrieveById.main",
+        handler: "src/notes/retrieve.main",
         environment: args.environment,
         permissions: args.permissions
       }
     },
     "GET /notes": {
       function: {
-        handler: "src/notes/retrieve.main",
+        handler: "src/notes/list.main",
         environment: args.environment,
         permissions: args.permissions
       }
