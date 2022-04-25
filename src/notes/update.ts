@@ -61,9 +61,24 @@ type Event = APIGatewayProxyEventV2WithJWTAuthorizer;
 export async function main(event: Event): Promise<APIGatewayProxyResultV2> {
   const { id } = event.pathParameters as PathParameters;
   const claims = event.requestContext.authorizer.jwt.claims as AuthorizerClaims;
-  const { sub: userId } = claims;
+  const userId = claims.sub;
 
   try {
+    const parsedBody = JSON.parse(event.body || "");
+
+    if (!validate(parsedBody)) {
+      logger.error(validate.errors);
+      const validationErrorData = handleValidationError(
+        validate.errors as DefinedError[]
+      );
+      return errorResponse<ValidationErrorData>({
+        statusCode: StatusCode.BadRequest,
+        errorData: validationErrorData
+      });
+    }
+
+    const updates = parsedBody as RequestBody;
+
     const note = await prisma.note.findUnique({
       where: {
         id
@@ -122,21 +137,6 @@ export async function main(event: Event): Promise<APIGatewayProxyResultV2> {
         });
       }
     }
-
-    const parsedBody = JSON.parse(event.body || "");
-
-    if (!validate(parsedBody)) {
-      logger.error(validate.errors);
-      const validationErrorData = handleValidationError(
-        validate.errors as DefinedError[]
-      );
-      return errorResponse<ValidationErrorData>({
-        statusCode: StatusCode.BadRequest,
-        errorData: validationErrorData
-      });
-    }
-
-    const updates = parsedBody as RequestBody;
 
     await prisma.note.update({
       where: {

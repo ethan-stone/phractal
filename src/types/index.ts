@@ -19,5 +19,6 @@ export {
   Permission,
   User,
   Visibility,
-  Role
+  Role,
+  NodeKind
 } from "@prisma/client";

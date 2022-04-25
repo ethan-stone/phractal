@@ -49,7 +49,7 @@ type Event = APIGatewayProxyEventV2WithJWTAuthorizer;
 
 export async function main(event: Event): Promise<APIGatewayProxyResultV2> {
   const claims = event.requestContext.authorizer.jwt.claims as AuthorizerClaims;
-  const { sub: userId } = claims;
+  const userId = claims.sub;
 
   try {
     const parsedBody = JSON.parse(event.body || "");

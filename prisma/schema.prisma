@@ -14,7 +14,7 @@ generator client {
 
 model User {
   id        String   @id
-  email     String
+  email     String   @unique
   notes     Note[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -50,14 +50,15 @@ enum Role {
 model Permission {
   id        String   @id @default(uuid())
   userId    String
-  noteId    String
-  note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  noteId    String?
+  note      Note?    @relation(fields: [noteId], references: [id], onDelete: Cascade)
   role      Role
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+
   @@unique([userId, noteId])
-  @@index([noteId, userId])
+  @@index([userId, noteId])
 }
 
 model ApiKey {

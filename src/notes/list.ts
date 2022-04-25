@@ -4,14 +4,21 @@ import {
   APIGatewayProxyResultV2
 } from "aws-lambda";
 import {
-  ErrorCodes,
+  ErrorCode,
   errorResponse,
   InternalErrorData,
   StatusCode,
-  successResponse
+  successResponse,
+  ValidationErrorData
 } from "../utils/responses";
 import { createLogger } from "../utils/logger";
-import { AuthorizerClaims } from "../types";
+import { AuthorizerClaims, Note } from "../types";
+import {
+  ajv,
+  DefinedError,
+  handleValidationError,
+  JSONSchemaType
+} from "../utils/validator";
 
 const logger = createLogger({
   service: "notes",
@@ -20,6 +27,21 @@ const logger = createLogger({
 
 const prisma = new PrismaClient();
 
+type RequestBody = {
+  skip?: number;
+  take?: number;
+};
+
+const schema: JSONSchemaType<RequestBody> = {
+  type: "object",
+  properties: {
+    skip: { type: "number", nullable: true },
+    take: { type: "number", nullable: true }
+  }
+};
+
+const validate = ajv.compile(schema);
+
 type Event = APIGatewayProxyEventV2WithJWTAuthorizer;
 
 export async function main(event: Event): Promise<APIGatewayProxyResultV2> {
@@ -27,6 +49,21 @@ export async function main(event: Event): Promise<APIGatewayProxyResultV2> {
   const userId = claims.sub;
 
   try {
+    const parsedBody = JSON.parse(event.body || "{}");
+
+    if (!validate(parsedBody)) {
+      logger.error(validate.errors);
+      const validationErrorData = handleValidationError(
+        validate.errors as DefinedError[]
+      );
+      return errorResponse<ValidationErrorData>({
+        statusCode: StatusCode.BadRequest,
+        errorData: validationErrorData
+      });
+    }
+
+    const { skip, take } = parsedBody;
+
     const notes = await prisma.note.findMany({
       where: {
         permissions: {
@@ -35,21 +72,14 @@ export async function main(event: Event): Promise<APIGatewayProxyResultV2> {
           }
         }
       },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        ownerId: true,
-        visibility: true,
-        createdAt: true,
-        updatedAt: true
-      }
+      skip: skip || 0,
+      take: take || 50
     });
 
     logger.info(`Notes retrieved for user ${userId}`);
 
     return successResponse<{
-      notes: typeof notes;
+      notes: Note[];
     }>({
       statusCode: StatusCode.Success,
       successData: {
@@ -61,7 +91,7 @@ export async function main(event: Event): Promise<APIGatewayProxyResultV2> {
     return errorResponse<InternalErrorData>({
       statusCode: StatusCode.InternalError,
       errorData: {
-        code: ErrorCodes.InternalError,
+        code: ErrorCode.InternalError,
         message: "Something went wrong"
       }
     });
