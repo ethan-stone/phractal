@@ -49,6 +49,13 @@ export function constructNotesRoutes(args: Args): {
         environment: args.environment,
         permissions: args.permissions
       }
+    },
+    "POST /notes/{id}/add-tag": {
+      function: {
+        handler: "src/notes/addTag.main",
+        environment: args.environment,
+        permissions: args.permissions
+      }
     }
   };
 }

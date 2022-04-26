@@ -5,6 +5,7 @@ import {
   HttpLambdaResponseType
 } from "@aws-cdk/aws-apigatewayv2-authorizers-alpha";
 import { constructNotesRoutes } from "./api/routes/notes";
+import { constructTagsRoutes } from "./api/routes/tags";
 
 export default class Stack extends sst.Stack {
   constructor(scope: sst.App, id: string, props?: sst.StackProps) {
@@ -16,6 +17,11 @@ export default class Stack extends sst.Stack {
         NOTES_BUCKET_NAME: notesBucket.bucketName
       },
       permissions: [notesBucket]
+    });
+
+    const tagsRoutes = constructTagsRoutes({
+      environment: {},
+      permissions: []
     });
 
     const firebaseAuthorizer = new HttpJwtAuthorizer(
@@ -57,7 +63,8 @@ export default class Stack extends sst.Stack {
           },
           authorizer: apiKeyAuthorizer
         },
-        ...notesRoutes
+        ...notesRoutes,
+        ...tagsRoutes
       }
     });
 
