@@ -43,7 +43,7 @@ model Note {
 
 model Tag {
   id              String            @id @default(uuid())
-  name            String
+  name            String            @unique
   NoteTagJunction NoteTagJunction[]
 }
 

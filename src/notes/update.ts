@@ -14,13 +14,14 @@ import {
 } from "../utils/responses";
 import { PrismaClient, Prisma } from "@prisma/client";
 import { createLogger } from "../utils/logger";
-import { AuthorizerClaims, EmptyObject, Visibility, Role } from "../types";
+import { AuthorizerClaims, EmptyObject, Visibility } from "../types";
 import {
   ajv,
   DefinedError,
   handleValidationError,
   JSONSchemaType
 } from "../utils/validator";
+import { PermissionChecker } from "../lib/permissionChecker";
 
 type PathParameters = {
   id: string;
@@ -104,39 +105,26 @@ export async function main(event: Event): Promise<APIGatewayProxyResultV2> {
       }
     });
 
-    if (note.visibility === Visibility.PRIVATE) {
-      if (!permission) {
-        return errorResponse<NotFoundData>({
-          statusCode: StatusCode.NotFound,
-          errorData: {
-            code: ErrorCode.NotFound,
-            message: `Note with id=${id} not found`
-          }
-        });
-      }
-      if (permission.role !== Role.ADMIN && permission.role !== Role.EDITOR) {
-        return errorResponse<ForbiddenData>({
-          statusCode: StatusCode.Forbidden,
-          errorData: {
-            code: ErrorCode.Forbidden,
-            message: "Not allowed to edit this resource"
-          }
-        });
-      }
-    } else {
-      if (
-        !permission ||
-        (permission.role !== Role.ADMIN && permission.role !== Role.EDITOR)
-      ) {
-        return errorResponse<ForbiddenData>({
-          statusCode: StatusCode.Forbidden,
-          errorData: {
-            code: ErrorCode.Forbidden,
-            message: "Not allowed to edit this resource"
-          }
-        });
-      }
-    }
+    const permissionChecker = new PermissionChecker(note, permission);
+    const permissionResult = permissionChecker.checkPermission();
+
+    if (!permissionResult.canView)
+      return errorResponse<NotFoundData>({
+        statusCode: StatusCode.NotFound,
+        errorData: {
+          code: ErrorCode.NotFound,
+          message: `Note with id=${id} not found`
+        }
+      });
+
+    if (!permissionResult.canEdit)
+      return errorResponse<ForbiddenData>({
+        statusCode: StatusCode.Forbidden,
+        errorData: {
+          code: ErrorCode.Forbidden,
+          message: "Not allowed to edit this resource"
+        }
+      });
 
     await prisma.note.update({
       where: {

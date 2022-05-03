@@ -20,5 +20,6 @@ export {
   User,
   Visibility,
   Role,
-  NodeKind
+  Tag,
+  NoteTagJunction
 } from "@prisma/client";
