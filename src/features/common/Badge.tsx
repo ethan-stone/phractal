@@ -2,10 +2,11 @@ type Props = {
   title: string;
 };
 
-const Badge: React.FC<Props> = ({ title }) => {
+const Badge: React.FC<Props> = ({ title, children }) => {
   return (
-    <span className="bg-white text-neutral-800 text-xs font-bold rounded-full py-1 px-2 mr-1">
+    <span className="flex flex-row items-center justify-center bg-white text-neutral-800 text-xs font-bold rounded-full px-2 mr-2">
       {title}
+      {children}
     </span>
   );
 };

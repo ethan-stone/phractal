@@ -69,31 +69,39 @@ export async function retrieveNote(
   return resJson;
 }
 
-type RetrieveNotesResponseData = {
+type ListNotesResponseData = {
   notes: Note[];
 };
 
-type RetrieveNotesResponseError = {
+type ListNotesResponseError = {
   message: string;
 };
 
-type RetrieveNotesResponse = ResponseBody<
-  RetrieveNotesResponseData,
-  RetrieveNotesResponseError
+type ListNotesResponse = ResponseBody<
+  ListNotesResponseData,
+  ListNotesResponseError
 >;
 
-export async function retrieveNotes(
-  token: string
-): Promise<RetrieveNotesResponse> {
+type ListNotesOptions = {
+  skip?: number;
+  take?: number;
+  withTags?: boolean;
+};
+
+export async function listNotes(
+  token: string,
+  options: ListNotesOptions
+): Promise<ListNotesResponse> {
   const res = await fetch(`${baseUrl}/notes`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`
-    }
+    },
+    body: JSON.stringify(options)
   });
 
-  const resJson = (await res.json()) as RetrieveNotesResponse;
+  const resJson = (await res.json()) as ListNotesResponse;
 
   return resJson;
 }
@@ -125,6 +133,33 @@ export async function updateNote(
   });
 
   const resJson = (await res.json()) as UpdateNoteResponse;
+
+  return resJson;
+}
+
+type AddTagResponseError = {
+  message: string;
+};
+
+type AddTagResponse = ResponseBody<{}, AddTagResponseError>;
+
+export async function addTag(
+  token: string,
+  id: string,
+  name: string
+): Promise<AddTagResponse> {
+  const res = await fetch(`${baseUrl}/notes/${id}/add-tag`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      name: name
+    })
+  });
+
+  const resJson = (await res.json()) as AddTagResponse;
 
   return resJson;
 }

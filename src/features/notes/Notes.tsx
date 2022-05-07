@@ -3,7 +3,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import NavBar from "../common/NavBar";
 import { Note } from "../../types";
 import NoteItem from "./NoteItem";
-import { createNote, retrieveNotes } from "../../utils/api";
+import { createNote, listNotes } from "../../utils/api";
 import { useFirebase } from "../../context/FirebaseContext";
 import { useNavigate } from "react-router-dom";
 import NewNoteForm, { NewNoteOnSubmitData } from "./NewNoteForm";
@@ -27,7 +27,7 @@ const Notes: React.FC = () => {
 
     const token = await getIdToken();
 
-    const res = await retrieveNotes(token);
+    const res = await listNotes(token, {});
 
     if (res.data) {
       setNotes(res.data.notes);
