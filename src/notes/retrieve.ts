@@ -16,7 +16,7 @@ import { AuthorizerClaims, Note } from "../types";
 
 const logger = createLogger({
   service: "notes",
-  functionName: "retrieveById"
+  functionName: "retrieve"
 });
 
 const prisma = new PrismaClient();
