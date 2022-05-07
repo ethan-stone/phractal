@@ -28,6 +28,7 @@ const logger = createLogger({
 const prisma = new PrismaClient();
 
 type RequestBody = {
+  withTags?: boolean;
   skip?: number;
   take?: number;
 };
@@ -35,6 +36,7 @@ type RequestBody = {
 const schema: JSONSchemaType<RequestBody> = {
   type: "object",
   properties: {
+    withTags: { type: "boolean", nullable: true },
     skip: { type: "number", nullable: true },
     take: { type: "number", nullable: true }
   }
@@ -62,7 +64,7 @@ export async function main(event: Event): Promise<APIGatewayProxyResultV2> {
       });
     }
 
-    const { skip, take } = parsedBody;
+    const { skip, take, withTags } = parsedBody;
 
     const notes = await prisma.note.findMany({
       where: {
@@ -72,6 +74,19 @@ export async function main(event: Event): Promise<APIGatewayProxyResultV2> {
           }
         }
       },
+      include: withTags
+        ? {
+            NoteTagJunction: {
+              select: {
+                tag: {
+                  select: {
+                    name: true
+                  }
+                }
+              }
+            }
+          }
+        : undefined,
       skip: skip || 0,
       take: take || 50
     });
