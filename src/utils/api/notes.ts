@@ -1,4 +1,14 @@
-import { ResponseBody, Note, NoteWithContent } from "../../types";
+import { ResponseBody, Note } from "../../types";
+
+function parseObjectToStrings(obj: {
+  [k: string]: string | number | boolean | undefined;
+}) {
+  const newObj: { [k: string]: string } = {};
+  for (const [k, v] of Object.entries(obj)) {
+    newObj[k] = new String(v).toString();
+  }
+  return newObj;
+}
 
 const baseUrl = "https://kllx4ijj38.execute-api.us-east-1.amazonaws.com";
 
@@ -40,7 +50,7 @@ export async function createNote(
 }
 
 type RetrieveNoteResponseData = {
-  note: NoteWithContent;
+  note: Note;
 };
 
 type RetrieveNoteResponseError = {
@@ -52,17 +62,27 @@ type RetrieveNoteResponse = ResponseBody<
   RetrieveNoteResponseError
 >;
 
+type RetrieveNoteOptions = {
+  withTags?: boolean;
+  withContent?: boolean;
+};
+
 export async function retrieveNote(
   token: string,
-  id: string
+  id: string,
+  options: RetrieveNoteOptions
 ): Promise<RetrieveNoteResponse> {
-  const res = await fetch(`${baseUrl}/notes/${id}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
+  const queryStringParams = new URLSearchParams(parseObjectToStrings(options));
+  const res = await fetch(
+    `${baseUrl}/notes/${id}?` + queryStringParams.toString(),
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      }
     }
-  });
+  );
 
   const resJson = (await res.json()) as RetrieveNoteResponse;
 
@@ -86,19 +106,20 @@ type ListNotesOptions = {
   skip?: number;
   take?: number;
   withTags?: boolean;
+  withContent?: boolean;
 };
 
 export async function listNotes(
   token: string,
   options: ListNotesOptions
 ): Promise<ListNotesResponse> {
-  const res = await fetch(`${baseUrl}/notes`, {
+  const queryStringParams = new URLSearchParams(parseObjectToStrings(options));
+  const res = await fetch(`${baseUrl}/notes?` + queryStringParams.toString(), {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify(options)
+    }
   });
 
   const resJson = (await res.json()) as ListNotesResponse;

@@ -17,13 +17,27 @@ export interface ReactRouterLocation extends Location {
   };
 }
 
+export type TagData = {
+  name: string;
+};
+
+export type Tag = {
+  tag: TagData;
+};
+
+export enum Visibility {
+  PUBLIC = "PUBLIC",
+  PRIVATE = "PRIVATE"
+}
+
 export interface Note {
   id: string;
   name: string;
   description: string | null;
   ownerId: string;
-}
-
-export interface NoteWithContent extends Note {
-  content: string;
+  visibility: Visibility;
+  content?: string;
+  NoteTagJunction?: Array<Tag>;
+  createdAt: string;
+  updatedAt: string;
 }

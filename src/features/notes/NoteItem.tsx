@@ -1,44 +1,22 @@
 import { Link } from "react-router-dom";
-import { MenuIcon, XIcon } from "@heroicons/react/solid";
+import { MenuIcon } from "@heroicons/react/solid";
 import Badge from "../common/Badge";
-import { useState } from "react";
-import { SubmitHandler, useForm } from "react-hook-form";
 
 type Props = {
   id: string;
   name: string;
   description: string | null;
+  tags: Array<string>;
   onMenuClick: React.MouseEventHandler<HTMLButtonElement>;
 };
 
-type TagFormFields = {
-  name: string;
-};
-
-const NoteItem: React.FC<Props> = ({ id, name, description, onMenuClick }) => {
-  const [tags, setTags] = useState<Array<string>>(["physics", "math"]);
-  const [tagInputVisible, setTagInputVisible] = useState<boolean>(false);
-
-  const { register, handleSubmit, resetField } = useForm<TagFormFields>();
-
-  const closeTagInput = (
-    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
-  ) => {
-    e.preventDefault();
-    setTagInputVisible(false);
-  };
-
-  const openTagInput = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    e.preventDefault();
-    setTagInputVisible(true);
-  };
-
-  const onSubmit: SubmitHandler<TagFormFields> = async (data) => {
-    setTags((prevTag) => [...prevTag, data.name]);
-    console.log(data);
-    resetField("name");
-  };
-
+const NoteItem: React.FC<Props> = ({
+  id,
+  name,
+  description,
+  tags,
+  onMenuClick
+}) => {
   return (
     <Link
       to={`/notes/${id}`}
@@ -47,35 +25,11 @@ const NoteItem: React.FC<Props> = ({ id, name, description, onMenuClick }) => {
       <div className="flex flex-col grow">
         <p className="text-xl font-bold">{name}</p>
         {description && <p>{description}</p>}
-        <div className="flex flex-row py-2">
-          {tags.map((t) => (
-            <Badge title={t} />
-          ))}
-          <button
-            onClick={openTagInput}
-            className="px-2 hover:bg-neutral-700 text-neutral-400 rounded"
-          >
-            + add tag
-          </button>
-        </div>
-        {tagInputVisible && (
-          <div className="flex flex-row grow mt-4">
-            <form onSubmit={handleSubmit(onSubmit)} className="flex grow">
-              <input
-                autoComplete="off"
-                className="p-1 grow bg-transparent border-b-2 border-b-neutral-600 focus:outline-none text-white"
-                placeholder="add tag"
-                onClick={(e) => e.preventDefault()}
-                {...register("name", {
-                  required: true,
-                  minLength: 1
-                })}
-                type="text"
-              />
-            </form>
-            <button onClick={closeTagInput}>
-              <XIcon height={15} width={15} />
-            </button>
+        {tags.length > 0 && (
+          <div className="flex flex-row py-2">
+            {tags.map((t, i) => (
+              <Badge key={i} title={t} />
+            ))}
           </div>
         )}
       </div>

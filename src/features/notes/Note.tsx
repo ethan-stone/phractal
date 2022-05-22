@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import NavBar from "../common/NavBar";
 import Editor from "./Editor";
@@ -7,6 +7,12 @@ import { addTag, retrieveNote, updateNote } from "../../utils/api/notes";
 import { useFirebase } from "../../context/FirebaseContext";
 import { SubmitHandler, useForm } from "react-hook-form";
 import Badge from "../common/Badge";
+import { Note, Tag } from "../../types";
+
+interface NoteWithTagsAndContent extends Note {
+  content: string;
+  NoteTagJunction: Array<Tag>;
+}
 
 type TagFormFields = {
   name: string;
@@ -58,7 +64,8 @@ const NotePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [doc, setDoc] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-  const [tags, setTags] = useState<Array<string>>(["physics", "math"]);
+  const [tags, setTags] = useState<Array<string>>([]);
+  const [note, setNote] = useState<NoteWithTagsAndContent>();
   const [tagInputVisible, setTagInputVisible] = useState<boolean>(false);
 
   const openTagInput = () => {
@@ -70,10 +77,16 @@ const NotePage: React.FC = () => {
 
     const token = await getIdToken();
 
-    const res = await retrieveNote(token, id as string);
+    const res = await retrieveNote(token, id as string, {
+      withContent: true,
+      withTags: true
+    });
 
     if (res.data) {
-      setDoc(res.data.note.content);
+      const note = res.data.note as NoteWithTagsAndContent;
+      setDoc(note.content);
+      setTags(note.NoteTagJunction.map((t) => t.tag.name));
+      setNote(note);
     } else if (res.error) {
       // do something later
     }
@@ -99,15 +112,15 @@ const NotePage: React.FC = () => {
     _retrieveNote();
   }, []);
 
-  // useEffect(() => {
-  //   const updateInterval = setInterval(() => {
-  //     _updateNote();
-  //   }, 5000);
+  useEffect(() => {
+    const updateInterval = setInterval(() => {
+      _updateNote();
+    }, 5000);
 
-  //   return () => {
-  //     clearInterval(updateInterval);
-  //   };
-  // }, [doc]);
+    return () => {
+      clearInterval(updateInterval);
+    };
+  }, [doc]);
 
   const handleDocChange = useCallback((newDoc) => {
     setDoc(newDoc);
@@ -125,7 +138,7 @@ const NotePage: React.FC = () => {
       <NavBar />
       <div className="bg-neutral-800 border-b border-white p-4">
         <div className="flex flex-row">
-          <p className="font-bold text-white text-2xl">Title</p>
+          <p className="font-bold text-white text-2xl">{note?.name}</p>
         </div>
         <div className="flex flex-row mt-2">
           {tags.map((t, i) => (
@@ -133,9 +146,7 @@ const NotePage: React.FC = () => {
           ))}
           {tagInputVisible ? (
             <NewTagForm
-              onSubmit={(data) =>
-                setTags((prevTags) => [...prevTags, data.name])
-              }
+              onSubmit={onSubmit}
               onBlur={() => setTagInputVisible(false)}
               onKeyDown={(e) => {
                 if (e.key === "Escape") {

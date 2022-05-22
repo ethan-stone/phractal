@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import NavBar from "../common/NavBar";
-import { Note } from "../../types";
+import { Note, Tag } from "../../types";
 import NoteItem from "./NoteItem";
 import { createNote, listNotes } from "../../utils/api";
 import { useFirebase } from "../../context/FirebaseContext";
@@ -11,26 +11,32 @@ import { Dialog, Transition } from "@headlessui/react";
 import PopOver from "./PopOver";
 import { TrashIcon } from "@heroicons/react/solid";
 
+interface NoteWithTags extends Note {
+  NoteTagJunction: Array<Tag>;
+}
+
 const Notes: React.FC = () => {
   const { getIdToken } = useFirebase();
   const [loading, setLoading] = useState<boolean>(false);
   const [newNoteFormOpen, setNewNoteFormOpen] = useState<boolean>(false);
-  const [notes, setNotes] = useState<Note[]>([]);
+  const [notes, setNotes] = useState<NoteWithTags[]>([]);
   const [popOverPosition, setPopoverPosition] = useState<{
     x: number;
     y: number;
   } | null>();
   const navigate = useNavigate();
 
-  async function _retrieveNotes() {
+  async function _listNotes() {
     setLoading(true);
 
     const token = await getIdToken();
 
-    const res = await listNotes(token, {});
+    const res = await listNotes(token, {
+      withTags: true
+    });
 
     if (res.data) {
-      setNotes(res.data.notes);
+      setNotes(res.data.notes as NoteWithTags[]);
     } else if (res.error) {
       // do something later
     }
@@ -39,7 +45,7 @@ const Notes: React.FC = () => {
   }
 
   useEffect(() => {
-    _retrieveNotes();
+    _listNotes();
   }, []);
 
   const onSubmit: SubmitHandler<NewNoteOnSubmitData> = async (data) => {
@@ -90,6 +96,7 @@ const Notes: React.FC = () => {
                         key={idx}
                         id={note.id}
                         name={note.name}
+                        tags={note.NoteTagJunction?.map((t) => t.tag.name)}
                         description={note.description}
                         onMenuClick={onNoteItemMenuClicked}
                       />
@@ -106,7 +113,7 @@ const Notes: React.FC = () => {
               className="fixed inset-0 z-20 overflow-y-auto"
               onClose={() => setNewNoteFormOpen(false)}
             >
-              <div className="flex min-h-screen items-center justify-center">
+              <div className="flex min-h-screen items-center justify-center bg-neutral-800/90">
                 <Transition.Child
                   as={Fragment}
                   enter="ease-out duration-300"
