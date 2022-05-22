@@ -12,7 +12,7 @@ import {
   successResponse,
   ValidationErrorData
 } from "../utils/responses";
-import { PrismaClient, Prisma } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { createLogger } from "../utils/logger";
 import { AuthorizerClaims, EmptyObject, Visibility } from "../types";
 import {
@@ -128,15 +128,22 @@ export async function main(event: Event): Promise<APIGatewayProxyResultV2> {
 
     await prisma.note.update({
       where: {
-        id
+        id: id
       },
-      data: {
-        name: updates.name,
-        description: updates.description,
-        content: updates.content,
-        visibility: updates.visibility
-      }
+      data: {}
     });
+
+    // await prisma.note.update({
+    //   where: {
+    //     id
+    //   },
+    //   data: {
+    //     name: updates.name,
+    //     description: updates.description,
+    //     content: updates.content,
+    //     visibility: updates.visibility
+    //   }
+    // });
 
     /**
      * Rather than logging the entire content if content was updated
@@ -154,17 +161,8 @@ export async function main(event: Event): Promise<APIGatewayProxyResultV2> {
       successData: {}
     });
   } catch (e) {
-    if (e instanceof Prisma.PrismaClientKnownRequestError) {
-      if (e.code === "P2025") {
-        return errorResponse<NotFoundData>({
-          statusCode: StatusCode.NotFound,
-          errorData: {
-            code: ErrorCode.NotFound,
-            message: `Note with id=${id} not found`
-          }
-        });
-      }
-    }
+    logger.error(e);
+
     return errorResponse<InternalErrorData>({
       statusCode: StatusCode.InternalError,
       errorData: {

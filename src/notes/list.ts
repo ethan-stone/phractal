@@ -27,18 +27,20 @@ const logger = createLogger({
 
 const prisma = new PrismaClient();
 
-type RequestBody = {
-  withTags?: boolean;
-  skip?: number;
-  take?: number;
+type QueryStringParams = {
+  withTags?: "true" | "false";
+  withContent?: "true" | "false";
+  skip?: string;
+  take?: string;
 };
 
-const schema: JSONSchemaType<RequestBody> = {
+const schema: JSONSchemaType<QueryStringParams> = {
   type: "object",
   properties: {
-    withTags: { type: "boolean", nullable: true },
-    skip: { type: "number", nullable: true },
-    take: { type: "number", nullable: true }
+    withTags: { type: "string", enum: ["true", "false"], nullable: true },
+    withContent: { type: "string", enum: ["true", "false"], nullable: true },
+    skip: { type: "string", nullable: true, pattern: "^[0-9]+$" },
+    take: { type: "string", nullable: true, pattern: "^[0-9]+$" }
   }
 };
 
@@ -51,9 +53,9 @@ export async function main(event: Event): Promise<APIGatewayProxyResultV2> {
   const userId = claims.sub;
 
   try {
-    const parsedBody = JSON.parse(event.body || "{}");
+    const queryStringParams = event.queryStringParameters || {};
 
-    if (!validate(parsedBody)) {
+    if (!validate(queryStringParams)) {
       logger.error(validate.errors);
       const validationErrorData = handleValidationError(
         validate.errors as DefinedError[]
@@ -64,7 +66,8 @@ export async function main(event: Event): Promise<APIGatewayProxyResultV2> {
       });
     }
 
-    const { skip, take, withTags } = parsedBody;
+    const { skip, take, withTags, withContent } =
+      queryStringParams as QueryStringParams;
 
     const notes = await prisma.note.findMany({
       where: {
@@ -74,21 +77,30 @@ export async function main(event: Event): Promise<APIGatewayProxyResultV2> {
           }
         }
       },
-      include: withTags
-        ? {
-            NoteTagJunction: {
-              select: {
-                tag: {
-                  select: {
-                    name: true
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        ownerId: true,
+        visibility: true,
+        content: withContent === "true",
+        NoteTagJunction:
+          withTags === "true"
+            ? {
+                select: {
+                  tag: {
+                    select: {
+                      name: true
+                    }
                   }
                 }
               }
-            }
-          }
-        : undefined,
-      skip: skip || 0,
-      take: take || 50
+            : false,
+        createdAt: true,
+        updatedAt: true
+      },
+      skip: skip ? parseInt(skip) : 0,
+      take: take ? parseInt(take) : 50
     });
 
     logger.info(`Notes retrieved for user ${userId}`);

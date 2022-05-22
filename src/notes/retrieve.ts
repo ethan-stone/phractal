@@ -9,10 +9,17 @@ import {
   InternalErrorData,
   NotFoundData,
   StatusCode,
-  successResponse
+  successResponse,
+  ValidationErrorData
 } from "../utils/responses";
 import { createLogger } from "../utils/logger";
 import { AuthorizerClaims, Note } from "../types";
+import {
+  ajv,
+  DefinedError,
+  handleValidationError,
+  JSONSchemaType
+} from "../utils/validator";
 
 const logger = createLogger({
   service: "notes",
@@ -20,6 +27,21 @@ const logger = createLogger({
 });
 
 const prisma = new PrismaClient();
+
+type QueryStringParams = {
+  withTags?: "true" | "false";
+  withContent?: "true" | "false";
+};
+
+const schema: JSONSchemaType<QueryStringParams> = {
+  type: "object",
+  properties: {
+    withTags: { type: "string", enum: ["true", "false"], nullable: true },
+    withContent: { type: "string", enum: ["true", "false"], nullable: true }
+  }
+};
+
+const validate = ajv.compile(schema);
 
 interface Event extends APIGatewayProxyEventV2WithJWTAuthorizer {
   pathParameters: {
@@ -34,9 +56,46 @@ export async function main(event: Event): Promise<APIGatewayProxyResultV2> {
   const { id } = event.pathParameters;
 
   try {
+    const queryStringParams = event.queryStringParameters || {};
+
+    if (!validate(queryStringParams)) {
+      logger.error(validate.errors);
+      const validationErrorData = handleValidationError(
+        validate.errors as DefinedError[]
+      );
+      return errorResponse<ValidationErrorData>({
+        statusCode: StatusCode.BadRequest,
+        errorData: validationErrorData
+      });
+    }
+
+    const { withTags, withContent } = queryStringParams as QueryStringParams;
+
     const note = await prisma.note.findUnique({
       where: {
         id
+      },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        ownerId: true,
+        visibility: true,
+        content: withContent === "true",
+        NoteTagJunction:
+          withTags === "true"
+            ? {
+                select: {
+                  tag: {
+                    select: {
+                      name: true
+                    }
+                  }
+                }
+              }
+            : false,
+        createdAt: true,
+        updatedAt: true
       }
     });
 
