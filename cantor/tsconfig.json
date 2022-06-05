@@ -1,7 +1,8 @@
 {
   "extends": "@tsconfig/node14",
-  "include": ["cantor/stacks", "cantor/testor/src", "test"],
+  "include": ["stacks", "src", "test"],
   "compilerOptions": {
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "strictNullChecks": true
   }
 }
