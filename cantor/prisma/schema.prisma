@@ -1,0 +1,84 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider             = "mysql"
+  url                  = env("DATABASE_URL")
+  referentialIntegrity = "prisma"
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["referentialIntegrity"]
+}
+
+model User {
+  id        String   @id
+  email     String   @unique
+  notes     Note[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Visibility {
+  PUBLIC
+  PRIVATE
+}
+
+model Note {
+  id              String            @id @default(uuid())
+  name            String
+  content         String            @db.MediumText
+  description     String?
+  ownerId         String
+  owner           User              @relation(fields: [ownerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  visibility      Visibility
+  permissions     Permission[]
+  NoteTagJunction NoteTagJunction[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([ownerId])
+}
+
+model Tag {
+  id              String            @id @default(uuid())
+  name            String            @unique
+  NoteTagJunction NoteTagJunction[]
+}
+
+model NoteTagJunction {
+  noteId String
+  note   Note   @relation(fields: [noteId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  tagId  String
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@id([noteId, tagId])
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+  COMMENTER
+  VIEWER
+}
+
+model Permission {
+  id        String   @id @default(uuid())
+  userId    String
+  noteId    String?
+  note      Note?    @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  role      Role
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+
+  @@unique([userId, noteId])
+  @@index([userId, noteId])
+}
+
+model ApiKey {
+  id   String @id
+  salt String
+  key  String
+}
