@@ -5,12 +5,13 @@ import {
   Provider,
 } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { PrismaModule } from 'src/prisma/prisma.module';
 import { AuthMiddleware } from './auth.middleware';
 import { SupertokensService } from './supertokens/supertokens.service';
 import { AuthModuleAsyncOptions, CONFIG_INJECTION_TOKEN } from './types';
 
 @Module({
-  imports: [ConfigModule],
+  imports: [ConfigModule, PrismaModule],
   providers: [SupertokensService],
 })
 export class AuthModule {

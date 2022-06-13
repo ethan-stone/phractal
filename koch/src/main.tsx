@@ -9,9 +9,7 @@ import FirebaseProvider from "./context/FirebaseContext";
 ReactDOM.render(
   <React.StrictMode>
     <BrowserRouter>
-      <FirebaseProvider>
-        <App />
-      </FirebaseProvider>
+      <App />
     </BrowserRouter>
   </React.StrictMode>,
   document.getElementById("root")

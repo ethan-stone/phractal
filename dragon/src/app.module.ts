@@ -4,6 +4,9 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModuleConfig } from './auth/types';
+import { PrismaModule } from './prisma/prisma.module';
+import { NotesService } from './notes/notes.service';
+import { NotesModule } from './notes/notes.module';
 
 @Module({
   imports: [
@@ -28,8 +31,10 @@ import { AuthModuleConfig } from './auth/types';
     ConfigModule.forRoot({
       envFilePath: '.env',
     }),
+    PrismaModule,
+    NotesModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, NotesService],
 })
 export class AppModule {}
