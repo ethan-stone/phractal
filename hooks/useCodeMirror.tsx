@@ -4,6 +4,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { defaultKeymap } from "@codemirror/commands";
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
 import { languages } from "@codemirror/language-data";
+import { syntaxHighlighting } from "@codemirror/language";
+import { oneDarkHighlightStyle } from "../utils/runmode";
 
 const cursor = "#ffffff";
 const background = "transparent";
@@ -109,6 +111,7 @@ const useCodeMirror = <T extends Element>(
           codeLanguages: languages,
           addKeymap: true
         }),
+        syntaxHighlighting(oneDarkHighlightStyle),
         theme,
         EditorView.lineWrapping,
         EditorView.updateListener.of((update) => {
