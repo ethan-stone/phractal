@@ -46,7 +46,7 @@ ol {
     --color-fg-default: #e5e5e5;
     --color-fg-muted: #d4d4d4;
     --color-fg-subtle: #a3a3a3;
-    --color-canvas-default: #262626;
+    --color-canvas-default: #171717;
     --color-canvas-subtle: #404040;
     --color-border-default: #404040;
     --color-border-muted: #525252;
@@ -91,7 +91,7 @@ ol {
     --color-prettylights-syntax-brackethighlighter-angle: #57606a;
     --color-prettylights-syntax-sublimelinter-gutter-mark: #8c959f;
     --color-prettylights-syntax-constant-other-reference-link: #0a3069;
-    --color-fg-default: #262626;
+    --color-fg-default: #171717;
     --color-fg-muted: #404040;
     --color-fg-subtle: #525252;
     --color-canvas-default: #e5e5e5;

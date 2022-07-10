@@ -34,7 +34,11 @@ const Preview: React.FC<Props> = (props) => {
     })
     .processSync(props.doc);
 
-  return <div className="flex-[0_0_50%] markdown-body">{md.result}</div>;
+  return (
+    <div className="flex-[0_0_50%] grow rounded p-2 markdown-body">
+      {md.result}
+    </div>
+  );
 };
 
 export default Preview;
