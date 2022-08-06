@@ -1,0 +1,29 @@
+{
+  "name": "phractal",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "sst start",
+    "build": "sst build",
+    "deploy": "sst deploy",
+    "deploy:dev": "sst deploy --stage dev",
+    "remove": "sst remove",
+    "remove:dev": "sst remove --stage dev",
+    "console": "sst console",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@serverless-stack/cli": "^1.6.7",
+    "@serverless-stack/resources": "^1.6.7",
+    "@tsconfig/node16": "^1.0.3",
+    "aws-cdk-lib": "2.32.0",
+    "prisma": "^4.1.1",
+    "typescript": "^4.7.4",
+    "vitest": "^0.21.0"
+  },
+  "workspaces": [
+    "services",
+    "app"
+  ]
+}
