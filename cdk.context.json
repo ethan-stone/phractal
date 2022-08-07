@@ -2,5 +2,8 @@
   "hosted-zone:account=475216627762:domainName=phractal.xyz:region=us-east-1": {
     "Id": "/hostedzone/Z06248971CWO9P23T5RQ",
     "Name": "phractal.xyz."
+  },
+  "key-provider:account=475216627762:aliasName=alias/aws/ssm:region=us-east-1": {
+    "keyId": "ff9f06f3-32de-44e5-a358-257378d1898a"
   }
 }

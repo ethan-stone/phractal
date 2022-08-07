@@ -17,13 +17,16 @@
     "@serverless-stack/cli": "^1.6.7",
     "@serverless-stack/resources": "^1.6.7",
     "@tsconfig/node16": "^1.0.3",
+    "@types/fs-extra": "^9.0.13",
     "aws-cdk-lib": "2.32.0",
-    "prisma": "^4.1.1",
     "typescript": "^4.7.4",
     "vitest": "^0.21.0"
   },
   "workspaces": [
     "services",
     "app"
-  ]
+  ],
+  "dependencies": {
+    "fs-extra": "^10.1.0"
+  }
 }
