@@ -1,34 +1,59 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import './App.css'
+import "./App.css";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { SupabaseProvider, useSupabase } from "./supabase";
+import { Provider } from "@supabase/supabase-js";
 
-function App() {
-  const [count, setCount] = useState(0)
+const queryClient = new QueryClient();
+
+function Home() {
+  const { supabase } = useSupabase();
+
+  const signIn = async (provider: Provider) => {
+    await supabase.auth.signIn({
+      provider
+    });
+  };
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+  };
+
+  const buttonStyles = "p-2 rounded-md border-gray-500 border";
 
   return (
-    <div className="App">
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+    <div className="min-h-screen flex items-center justify-center">
+      {!supabase.auth.user() ? (
+        <div className="flex flex-col gap-2">
+          <button
+            className={buttonStyles}
+            onClick={async () => await signIn("google")}
+          >
+            Sign In With Google
+          </button>
+          <button
+            className={buttonStyles}
+            onClick={async () => await signIn("github")}
+          >
+            Sign In With Github
+          </button>
+        </div>
+      ) : (
+        <button className={buttonStyles} onClick={async () => await signOut()}>
+          Sign Out
         </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      )}
     </div>
-  )
+  );
 }
 
-export default App
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <SupabaseProvider>
+        <Home />
+      </SupabaseProvider>
+    </QueryClientProvider>
+  );
+}
+
+export default App;

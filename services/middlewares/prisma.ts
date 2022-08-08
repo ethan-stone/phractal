@@ -1,35 +1,29 @@
 import middy from "@middy/core";
 import { PrismaClient } from "@prisma/client";
-import {
-  SSMClient,
-  GetParameterCommand,
-  SSMClientConfig
-} from "@aws-sdk/client-ssm";
 
-type Options = {
-  ssmCLientConfig: SSMClientConfig;
-  paramName: string;
-};
+import { SSMParamsContext } from "./ssm";
 
 export type PrismaContext = AWSLambda.Context & { prisma: PrismaClient };
 
-export const prismaMiddleware = (opts: Options): middy.MiddlewareObj => {
-  const ssmClient = new SSMClient(opts.ssmCLientConfig);
+export const prismaMiddleware = (): middy.MiddlewareObj<
+  any,
+  any,
+  any,
+  SSMParamsContext<{ prisma: string } & Record<string, string | undefined>>
+> => {
   let prisma: PrismaClient;
 
-  const before: middy.MiddlewareFn = async (request): Promise<void> => {
+  const before: middy.MiddlewareFn<
+    any,
+    any,
+    any,
+    SSMParamsContext<{ prisma: string } & Record<string, string | undefined>>
+  > = async (request): Promise<void> => {
     if (!prisma) {
-      const result = await ssmClient.send(
-        new GetParameterCommand({
-          WithDecryption: true,
-          Name: opts.paramName
-        })
-      );
-
       prisma = new PrismaClient({
         datasources: {
           db: {
-            url: result.Parameter?.Value
+            url: request.context.ssmParams.prisma
           }
         }
       });

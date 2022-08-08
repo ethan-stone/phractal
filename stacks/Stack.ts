@@ -55,11 +55,20 @@ export function Stack({ app, stack }: StackContext) {
     }
   );
 
+  const supabaseJWTSecretParam =
+    StringParameter.fromSecureStringParameterAttributes(
+      stack,
+      "SupabaseJWTSecret",
+      {
+        parameterName: "/phractal/dev/supabase/jwtsecret"
+      }
+    );
+
   const ssmKey = aws_kms.Key.fromLookup(stack, "SSMKey", {
     aliasName: "alias/aws/ssm"
   });
 
-  const func = new Function(stack, "CreateProfile", {
+  const createProfile = new Function(stack, "CreateProfile", {
     handler: "functions/lambda.main",
     environment: {
       DB_PARAM_NAME: dburlParam.parameterName
@@ -69,13 +78,33 @@ export function Stack({ app, stack }: StackContext) {
     }
   });
 
-  dburlParam.grantRead(func);
-  ssmKey.grantDecrypt(func);
+  dburlParam.grantRead(createProfile);
+  ssmKey.grantDecrypt(createProfile);
+
+  const supabaseAuthorizer = new Function(stack, "SupabaseAuthorizer", {
+    handler: "functions/auth/authorizer.main",
+    environment: {
+      JWT_SECRET_PARAM_NAME: supabaseJWTSecretParam.parameterName
+    }
+  });
+
+  supabaseJWTSecretParam.grantRead(supabaseAuthorizer);
+  ssmKey.grantDecrypt(supabaseAuthorizer);
 
   const api = new Api(stack, "api", {
+    authorizers: {
+      supabase: {
+        type: "lambda",
+        responseTypes: ["simple"],
+        function: supabaseAuthorizer
+      }
+    },
+    defaults: {
+      authorizer: "supabase"
+    },
     routes: {
       "POST /profiles": {
-        function: func
+        function: createProfile
       }
     }
   });

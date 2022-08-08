@@ -1,14 +1,22 @@
 import middy from "@middy/core";
-import { APIGatewayProxyHandlerV2 } from "aws-lambda";
+import { ssmMiddleware, SSMParamsContext } from "middlewares/ssm";
 import { prismaMiddleware, PrismaContext } from "../middlewares/prisma";
 import { uuid } from "../utils/uuid";
+import { z } from "zod";
 
-type Event = AWSLambda.APIGatewayProxyEventV2;
-type Context = PrismaContext;
+type Event = Phractal.APIGatewayProxyEventV2WithLambdaAuthorizer;
+type Context = SSMParamsContext<{ prisma: string }> & PrismaContext;
 type Result = AWSLambda.APIGatewayProxyResultV2;
 
+const requestBodySchema = z.object({
+  uid: z.string(),
+  email: z.string().email()
+});
+
+type RequestBody = z.infer<typeof requestBodySchema>;
+
 export const handler = async (event: Event, ctx: Context): Promise<Result> => {
-  console.log(event);
+  const requestBody = requestBodySchema.parse(event.body);
 
   const user = await ctx.prisma.profile.create({
     data: {
@@ -26,9 +34,13 @@ export const handler = async (event: Event, ctx: Context): Promise<Result> => {
 
 export const main = middy(handler);
 
-main.use(
-  prismaMiddleware({
-    ssmCLientConfig: {},
-    paramName: process.env.DB_PARAM_NAME || ""
-  })
-);
+main
+  .use(
+    ssmMiddleware({
+      ssmClientConfig: {},
+      ssmParams: {
+        prisma: process.env.DB_PARAM_NAME || ""
+      }
+    })
+  )
+  .use(prismaMiddleware());
