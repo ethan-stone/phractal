@@ -26,6 +26,8 @@ export const SupabaseProvider: React.FC<Props> = ({ children }) => {
 
     if (session) setIsAuthed(true);
 
+    console.log(session);
+
     const { data, error } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (event === "SIGNED_IN") {

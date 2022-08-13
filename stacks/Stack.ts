@@ -112,6 +112,9 @@ export function Stack({ app, stack }: StackContext) {
   if (app.stage === "dev" || app.stage === "prod") {
     new ViteStaticSite(stack, "app", {
       path: "app",
+      environment: {
+        STAGE: app.stage
+      },
       customDomain: {
         domainName:
           app.stage === "prod" ? "phractal.xyz" : `${app.stage}.phractal.xyz`,

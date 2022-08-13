@@ -13,12 +13,7 @@ function Home() {
         provider
       },
       {
-        redirectTo:
-          import.meta.env.STAGE === "dev"
-            ? "https://dev.phractalxyz"
-            : import.meta.env.STAGE === "prod"
-            ? "https://phractal.xyz"
-            : "http://localhost:5173"
+        redirectTo: "http://localhost:5173"
       }
     );
   };

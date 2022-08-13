@@ -1,6 +1,6 @@
 import middy from "@middy/core";
 import { verify } from "jsonwebtoken";
-import { ssmMiddleware, SSMParamsContext } from "middlewares/ssm";
+import { ssmMiddleware, SSMParamsContext } from "@middlewares/ssm";
 
 type Token = {
   sub: string;

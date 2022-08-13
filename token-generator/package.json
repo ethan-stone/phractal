@@ -1,8 +1,9 @@
 {
-  "name": "app",
+  "name": "@phractal/token-generator",
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "description": "A simple vite app to generate access tokens for api calls",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -10,18 +11,18 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^1.35.6",
-    "@tanstack/react-query": "^4.1.0",
+    "@tanstack/react-query": "^4.0.10",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@types/react": "^18.0.17",
+    "@types/react": "^18.0.15",
     "@types/react-dom": "^18.0.6",
-    "@vitejs/plugin-react": "^2.0.1",
+    "@vitejs/plugin-react": "^2.0.0",
     "autoprefixer": "^10.4.8",
     "postcss": "^8.4.16",
     "tailwindcss": "^3.1.8",
     "typescript": "^4.6.4",
-    "vite": "^3.0.7"
+    "vite": "^3.0.0"
   }
 }

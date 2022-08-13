@@ -1,12 +1,12 @@
 import middy from "@middy/core";
-import { ssmMiddleware, SSMParamsContext } from "middlewares/ssm";
-import { prismaMiddleware, PrismaContext } from "../middlewares/prisma";
-import { uuid } from "../utils/uuid";
+import { ssmMiddleware, SSMParamsContext } from "@middlewares/ssm";
+import { prismaMiddleware, PrismaContext } from "@middlewares/prisma";
 import { z } from "zod";
-
-type Event = Phractal.APIGatewayProxyEventV2WithLambdaAuthorizer;
-type Context = SSMParamsContext<{ prisma: string }> & PrismaContext;
-type Result = AWSLambda.APIGatewayProxyResultV2;
+import {
+  bodyParserMiddleware,
+  ParsedBodyContext
+} from "@middlewares/body-parser";
+import { createResponse } from "@http-responses";
 
 const requestBodySchema = z.object({
   uid: z.string(),
@@ -15,26 +15,31 @@ const requestBodySchema = z.object({
 
 type RequestBody = z.infer<typeof requestBodySchema>;
 
-export const handler = async (event: Event, ctx: Context): Promise<Result> => {
-  const requestBody = requestBodySchema.parse(event.body);
+type Event = Phractal.APIGatewayProxyEventV2WithLambdaAuthorizer;
+type Context = SSMParamsContext<{ prisma: string }> &
+  PrismaContext &
+  ParsedBodyContext<RequestBody>;
+type Result = AWSLambda.APIGatewayProxyResultV2;
 
+export const handler = async (_: Event, ctx: Context): Promise<Result> => {
   const user = await ctx.prisma.profile.create({
-    data: {
-      uid: uuid(),
-      email: `${uuid()}@phractal.xyz`
-    }
+    data: ctx.body
   });
 
-  return {
+  return createResponse({
     statusCode: 200,
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(user)
-  };
+    body: user
+  });
 };
 
 export const main = middy(handler);
 
 main
+  .use(
+    bodyParserMiddleware({
+      schema: requestBodySchema
+    })
+  )
   .use(
     ssmMiddleware({
       ssmClientConfig: {},

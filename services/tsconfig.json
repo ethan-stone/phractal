@@ -7,6 +7,11 @@
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
-    "typeRoots": ["types"]
+    "typeRoots": ["types"],
+    "paths": {
+      "@middlewares/*": ["./middlewares/*"],
+      "@http-responses": ["./http-responses"],
+      "@http-responses/*": ["./http-responses/*"]
+    }
   }
 }
