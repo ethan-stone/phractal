@@ -1,6 +1,6 @@
-type ErrorOpts = {
+type ErrorOpts<T extends Record<string, any> = {}> = {
   statusCode: 400 | 404 | 500;
-  message?: string;
+  body?: T;
 };
 
 const getDefaultMessage = (statusCode: ErrorOpts["statusCode"]) => {
@@ -12,8 +12,15 @@ const getDefaultMessage = (statusCode: ErrorOpts["statusCode"]) => {
 export const createError = (
   opts: ErrorOpts
 ): AWSLambda.APIGatewayProxyResultV2 => {
+  console.log(opts.body);
+
   return {
     statusCode: opts.statusCode,
-    body: opts.message || getDefaultMessage(opts.statusCode)
+    body:
+      JSON.stringify(opts.body) ||
+      JSON.stringify({ message: getDefaultMessage(opts.statusCode) }),
+    headers: {
+      "Content-Type": "application/json"
+    }
   };
 };

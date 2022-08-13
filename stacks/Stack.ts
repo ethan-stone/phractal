@@ -69,7 +69,7 @@ export function Stack({ app, stack }: StackContext) {
   });
 
   const createProfile = new Function(stack, "CreateProfile", {
-    handler: "functions/lambda.main",
+    handler: "functions/profiles/create-profile.main",
     environment: {
       DB_PARAM_NAME: dburlParam.parameterName
     },

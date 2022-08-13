@@ -8,7 +8,7 @@ type Options = {
 
 export type ParsedBodyContext<T extends Record<string, any>> =
   AWSLambda.Context & {
-    body: T;
+    parsedBody: T;
   };
 
 export const bodyParserMiddleware = (
@@ -25,7 +25,9 @@ export const bodyParserMiddleware = (
     } catch (e) {
       return createError({
         statusCode: 400,
-        message: "Invalid JSON body"
+        body: {
+          message: "Invalid JSON body"
+        }
       });
     }
 
@@ -34,10 +36,10 @@ export const bodyParserMiddleware = (
     if (!result.success)
       return createError({
         statusCode: 400,
-        message: result.error.message
+        body: result.error.format()
       });
 
-    Object.assign(request.context, { parsedBody });
+    Object.assign(request.context, { parsedBody: result.data });
 
     return;
   };

@@ -26,7 +26,7 @@ function Home() {
 
   return (
     <div className="min-h-screen flex items-center justify-center">
-      {!supabase.auth.user() ? (
+      {!supabase.auth.session() ? (
         <div className="flex flex-col gap-2">
           <button
             className={buttonStyles}
@@ -42,9 +42,17 @@ function Home() {
           </button>
         </div>
       ) : (
-        <button className={buttonStyles} onClick={async () => await signOut()}>
-          Sign Out
-        </button>
+        <div className="flex flex-col gap-2 w-full">
+          <p className="whitespace-pre-wrap break-words">
+            {JSON.stringify(supabase.auth.session(), null, 2)}
+          </p>
+          <button
+            className={buttonStyles}
+            onClick={async () => await signOut()}
+          >
+            Sign Out
+          </button>
+        </div>
       )}
     </div>
   );

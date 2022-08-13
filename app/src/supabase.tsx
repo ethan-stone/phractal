@@ -17,6 +17,59 @@ type Props = {
   children: React.ReactElement;
 };
 
+const createProfile = async (
+  token: string,
+  {
+    uid,
+    email
+  }: {
+    uid: string;
+    email: string;
+  }
+) => {
+  const res = await fetch(`${import.meta.env.API_URL}/profiles`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token
+    },
+    body: JSON.stringify({
+      uid,
+      email
+    })
+  });
+
+  const json = (await res.json()) as { uid: string; email: string };
+
+  return json;
+};
+
+const getProfile = async (
+  token: string,
+  {
+    uid
+  }: {
+    uid: string;
+  }
+) => {
+  const res = await fetch(`${import.meta.env.API_URL}/profiles/${uid}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      uid
+    })
+  });
+
+  const json = (await res.json()) as { uid: string; email: string };
+
+  console.log(json);
+
+  return json;
+};
+
 export const SupabaseProvider: React.FC<Props> = ({ children }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [isAuthed, setIsAuthed] = useState<boolean>(false);
@@ -29,6 +82,9 @@ export const SupabaseProvider: React.FC<Props> = ({ children }) => {
     const { data, error } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (event === "SIGNED_IN") {
+          getProfile(session?.access_token as string, {
+            uid: session?.user?.id as string
+          }).then((profile) => {});
           setIsAuthed(true);
           console.log("SIGNED_IN", session);
         }

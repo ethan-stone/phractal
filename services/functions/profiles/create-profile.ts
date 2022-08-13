@@ -13,7 +13,7 @@ const requestBodySchema = z.object({
   email: z.string().email()
 });
 
-type RequestBody = z.infer<typeof requestBodySchema>;
+export type RequestBody = z.infer<typeof requestBodySchema>;
 
 type Event = Phractal.APIGatewayProxyEventV2WithLambdaAuthorizer;
 type Context = SSMParamsContext<{ prisma: string }> &
@@ -23,7 +23,7 @@ type Result = AWSLambda.APIGatewayProxyResultV2;
 
 export const handler = async (_: Event, ctx: Context): Promise<Result> => {
   const user = await ctx.prisma.profile.create({
-    data: ctx.body
+    data: ctx.parsedBody
   });
 
   return createResponse({

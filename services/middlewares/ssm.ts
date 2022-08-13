@@ -29,8 +29,6 @@ export const ssmMiddleware = (opts: Options): middy.MiddlewareObj => {
           })
         );
 
-        console.log(result);
-
         ssmParams[k] = result.Parameter?.Value;
       }
     }
