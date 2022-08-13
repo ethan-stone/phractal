@@ -14,9 +14,9 @@ function Home() {
       },
       {
         redirectTo:
-          import.meta.env.STAGE === "dev"
+          import.meta.env.VITE_STAGE === "dev"
             ? "https://dev.phractalxyz"
-            : import.meta.env.STAGE === "prod"
+            : import.meta.env.VITE_STAGE === "prod"
             ? "https://phractal.xyz"
             : "http://localhost:5173"
       }
@@ -56,6 +56,7 @@ function Home() {
 }
 
 function App() {
+  console.log(import.meta.env);
   return (
     <QueryClientProvider client={queryClient}>
       <SupabaseProvider>

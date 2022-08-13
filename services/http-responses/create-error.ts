@@ -13,6 +13,7 @@ export const createError = (
   opts: ErrorOpts
 ): AWSLambda.APIGatewayProxyResultV2 => {
   console.log(opts.body);
+  console.log("ewfwefwf");
 
   return {
     statusCode: opts.statusCode,

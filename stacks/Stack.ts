@@ -55,6 +55,10 @@ export function Stack({ app, stack }: StackContext) {
     }
   );
 
+  const ssmKey = aws_kms.Key.fromLookup(stack, "SSMKey", {
+    aliasName: "alias/aws/ssm"
+  });
+
   const supabaseJWTSecretParam =
     StringParameter.fromSecureStringParameterAttributes(
       stack,
@@ -64,9 +68,15 @@ export function Stack({ app, stack }: StackContext) {
       }
     );
 
-  const ssmKey = aws_kms.Key.fromLookup(stack, "SSMKey", {
-    aliasName: "alias/aws/ssm"
+  const supabaseAuthorizer = new Function(stack, "SupabaseAuthorizer", {
+    handler: "functions/auth/authorizer.main",
+    environment: {
+      JWT_SECRET_PARAM_NAME: supabaseJWTSecretParam.parameterName
+    }
   });
+
+  supabaseJWTSecretParam.grantRead(supabaseAuthorizer);
+  ssmKey.grantDecrypt(supabaseAuthorizer);
 
   const createProfile = new Function(stack, "CreateProfile", {
     handler: "functions/profiles/create-profile.main",
@@ -81,15 +91,15 @@ export function Stack({ app, stack }: StackContext) {
   dburlParam.grantRead(createProfile);
   ssmKey.grantDecrypt(createProfile);
 
-  const supabaseAuthorizer = new Function(stack, "SupabaseAuthorizer", {
-    handler: "functions/auth/authorizer.main",
+  const getProfile = new Function(stack, "GetProfile", {
+    handler: "functions/profiles/get-profile.main",
     environment: {
-      JWT_SECRET_PARAM_NAME: supabaseJWTSecretParam.parameterName
+      DB_PARAM_NAME: dburlParam.parameterName
+    },
+    bundle: {
+      externalModules: app.local ? [] : ["@prisma/client", ".prisma"]
     }
   });
-
-  supabaseJWTSecretParam.grantRead(supabaseAuthorizer);
-  ssmKey.grantDecrypt(supabaseAuthorizer);
 
   const api = new Api(stack, "api", {
     authorizers: {
@@ -105,6 +115,9 @@ export function Stack({ app, stack }: StackContext) {
     routes: {
       "POST /profiles": {
         function: createProfile
+      },
+      "GET /profiles/{id}": {
+        function: getProfile
       }
     }
   });
@@ -113,7 +126,7 @@ export function Stack({ app, stack }: StackContext) {
     new ViteStaticSite(stack, "app", {
       path: "app",
       environment: {
-        STAGE: app.stage
+        VITE_STAGE: app.stage
       },
       customDomain: {
         domainName:

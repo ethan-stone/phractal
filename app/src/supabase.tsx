@@ -27,11 +27,13 @@ const createProfile = async (
     email: string;
   }
 ) => {
-  const res = await fetch(`${import.meta.env.API_URL}/profiles`, {
+  console.log(token);
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/profiles`, {
+    mode: "cors",
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: "Bearer " + token
+      Authorization: `Bearer ${token}`
     },
     body: JSON.stringify({
       uid,
@@ -52,22 +54,30 @@ const getProfile = async (
     uid: string;
   }
 ) => {
-  const res = await fetch(`${import.meta.env.API_URL}/profiles/${uid}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify({
-      uid
-    })
-  });
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/profiles/${uid}`, {
+      mode: "cors",
+      credentials: "include",
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        uid
+      })
+    });
 
-  const json = (await res.json()) as { uid: string; email: string };
+    console.log(res);
 
-  console.log(json);
+    const json = (await res.json()) as { uid: string; email: string };
 
-  return json;
+    console.log(json);
+
+    return json;
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 export const SupabaseProvider: React.FC<Props> = ({ children }) => {
@@ -82,10 +92,10 @@ export const SupabaseProvider: React.FC<Props> = ({ children }) => {
     const { data, error } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (event === "SIGNED_IN") {
-          getProfile(session?.access_token as string, {
-            uid: session?.user?.id as string
+          createProfile(session?.access_token as string, {
+            uid: session?.user?.id as string,
+            email: session?.user?.email as string
           }).then((profile) => {});
-          setIsAuthed(true);
           console.log("SIGNED_IN", session);
         }
         if (event === "SIGNED_OUT") {

@@ -1,8 +1,8 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-  readonly STAGE: string | undefined;
-  readonly API_URL: string;
+  readonly VITE_STAGE: string | undefined;
+  readonly VITE_API_URL: string;
 }
 
 interface ImportMeta {
