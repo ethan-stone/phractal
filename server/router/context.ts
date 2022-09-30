@@ -1,10 +1,11 @@
 // src/server/router/context.ts
-import * as trpc from "@trpc/server";
+import { initTRPC, inferAsyncReturnType } from "@trpc/server";
 import * as trpcNext from "@trpc/server/adapters/next";
 import { unstable_getServerSession as getServerSession } from "next-auth";
 import type { DefaultSession } from "next-auth";
 import { authOptions as nextAuthOptions } from "../../pages/api/auth/[...nextauth]";
-import { prisma } from "../db/client";
+import { db } from "../db/client";
+import superjson from "superjson";
 
 interface Session extends DefaultSession {
   user: DefaultSession["user"] & { sub: string };
@@ -25,10 +26,12 @@ export const createContext = async (
     req,
     res,
     session,
-    prisma
+    db
   };
 };
 
-type Context = trpc.inferAsyncReturnType<typeof createContext>;
+type Context = inferAsyncReturnType<typeof createContext>;
 
-export const createRouter = () => trpc.router<Context>();
+export const t = initTRPC.context<Context>().create({
+  transformer: superjson
+});

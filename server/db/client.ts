@@ -1,15 +1,17 @@
-import { PrismaClient } from "@prisma/client";
+import { MongoClient } from "mongodb";
 
-declare global {
-  var prisma: PrismaClient | undefined;
+if (!process.env.DATABASE_URL) {
+  throw new Error('Invalid environment variable: "DATABASE_URL"');
 }
 
-export const prisma =
-  global.prisma ||
-  new PrismaClient({
-    log: ["query"]
-  });
+const url = process.env.DATABASE_URL;
+
+export const db = global.db || new MongoClient(url);
+
+declare global {
+  var db: MongoClient;
+}
 
 if (process.env.NODE_ENV !== "production") {
-  global.prisma = prisma;
+  global.db = db;
 }

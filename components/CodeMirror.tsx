@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from "react";
 
 import { EditorView, ViewUpdate } from "@codemirror/view";
 import { EditorState } from "@codemirror/state";
-import { basicSetup } from "@codemirror/basic-setup";
+import { basicSetup } from "codemirror";
 import { markdown } from "@codemirror/lang-markdown";
 import { oneDark } from "@codemirror/theme-one-dark";
 
