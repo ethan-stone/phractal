@@ -101,6 +101,9 @@ export function Stack({ app, stack }: StackContext) {
     }
   });
 
+  dburlParam.grantRead(getProfile);
+  ssmKey.grantDecrypt(getProfile);
+
   const api = new Api(stack, "api", {
     authorizers: {
       supabase: {
