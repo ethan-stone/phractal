@@ -1,6 +1,6 @@
 import { EditorState } from "@codemirror/state";
 import { useCallback, useEffect } from "react";
-import useCodeMirror from "../hooks/useCodeMirror";
+import useCodeMirror from "../hooks/use-code-mirror";
 
 type Props = {
   doc: string;
