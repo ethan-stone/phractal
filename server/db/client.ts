@@ -1,21 +1,19 @@
-import { MongoClient } from "mongodb";
-
-if (!process.env.DATABASE_URL) {
-  throw new Error('Invalid environment variable: "DATABASE_URL"');
-}
-
-const url = process.env.DATABASE_URL;
-
-export const db =
-  global.db ||
-  new MongoClient(url, {
-    ignoreUndefined: true
-  });
+import { Prisma, PrismaClient } from "@prisma/client";
 
 declare global {
-  var db: MongoClient;
+  var db: PrismaClient | undefined;
 }
 
-if (process.env.NODE_ENV !== "production") {
-  global.db = db;
-}
+const defaultLogLevels: Prisma.LogLevel[] = ["info", "warn", "error"];
+
+const client =
+  globalThis.db ||
+  new PrismaClient({
+    log:
+      process.env.NODE_ENV === "production"
+        ? defaultLogLevels
+        : defaultLogLevels.concat(["query"])
+  });
+if (process.env.NODE_ENV !== "production") globalThis.db = client;
+
+export const db = client;
