@@ -20,7 +20,7 @@ import {
 import {
   deleteVerificationTokenByIdentifierAndToken,
   insertVerificationToken,
-} from "@/server/db/verificationToken";
+} from "@/server/db/verification-token";
 
 export function AuthAdapter(): Adapter {
   return {

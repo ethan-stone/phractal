@@ -1,10 +1,5 @@
+import { type VerificationToken } from "@/server/domain/verification-token";
 import { db } from "./client";
-
-export type VerificationToken = {
-  identifier: string;
-  token: string;
-  expires: Date;
-};
 
 type DbVerificationToken = VerificationToken;
 
@@ -18,11 +13,7 @@ export type InsertVerificationTokenFn = (
 export const insertVerificationToken: InsertVerificationTokenFn = async (
   verificationToken
 ) => {
-  const res = await verificationTokenColl.insertOne(verificationToken);
-
-  if (!res.acknowledged) {
-    throw new Error(`Database insert not acknowledged`);
-  }
+  await verificationTokenColl.insertOne(verificationToken);
 
   return verificationToken;
 };
@@ -38,8 +29,6 @@ export const deleteVerificationTokenByIdentifierAndToken: DeleteVerificationToke
       identifier,
       token,
     });
-
-    if (!res.ok) throw new Error(`Database delete not acknowledged`);
 
     return res.value;
   };
