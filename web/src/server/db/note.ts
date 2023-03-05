@@ -1,11 +1,10 @@
 import { type Note } from "@/server/domain/note";
+import { createId } from "@paralleldrive/cuid2";
 import { db } from "./client";
 
 type DbNote = Omit<Note, "id"> & { _id: string };
 
 const noteColl = db.collection<DbNote>("notes");
-
-export type InsertNoteFn = (note: Note) => Promise<Note>;
 
 function convertDbNoteToNote(dbNote: DbNote): Note {
   return {
@@ -18,9 +17,13 @@ function convertDbNoteToNote(dbNote: DbNote): Note {
   };
 }
 
+export type InsertNoteFn = (note: Omit<Note, "id">) => Promise<Note>;
+
 export const insertNote: InsertNoteFn = async (note) => {
+  const id = `note_${createId()}`;
+
   await noteColl.insertOne({
-    _id: `note_${note.id}`,
+    _id: id,
     content: note.content,
     name: note.name,
     userId: note.userId,
@@ -28,7 +31,10 @@ export const insertNote: InsertNoteFn = async (note) => {
     updatedAt: note.updatedAt,
   });
 
-  return note;
+  return {
+    id,
+    ...note,
+  };
 };
 
 export type UpdateNoteByIdFn = (
@@ -52,4 +58,21 @@ export const updateNoteById: UpdateNoteByIdFn = async (id, updates) => {
   );
 
   return res.value && convertDbNoteToNote(res.value);
+};
+
+export type GetNoteByIdAndUserIdFn = (
+  id: string,
+  userId: string
+) => Promise<Note | null>;
+
+export const getNoteByIdAndUserId: GetNoteByIdAndUserIdFn = async (
+  id,
+  userId
+) => {
+  const res = await noteColl.findOne({
+    _id: id,
+    userId,
+  });
+
+  return res && convertDbNoteToNote(res);
 };

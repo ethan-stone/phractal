@@ -1,11 +1,18 @@
 import { type InsertNoteFn } from "@/server/db/note";
-import { type Note } from "@/server/domain/note";
 
 export async function newNoteUseCase(
-  note: Note,
+  args: {
+    userId: string;
+  },
   ctx: {
     insertNote: InsertNoteFn;
   }
 ) {
-  return ctx.insertNote(note);
+  return ctx.insertNote({
+    userId: args.userId,
+    name: "Untitled",
+    content: "",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
 }
