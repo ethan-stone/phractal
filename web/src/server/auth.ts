@@ -4,8 +4,9 @@ import {
   type NextAuthOptions,
   type DefaultSession,
 } from "next-auth";
-import DiscordProvider from "next-auth/providers/discord";
 import { env } from "@/env.mjs";
+import Email from "next-auth/providers/email";
+import { AuthAdapter } from "@/server/auth/adapter";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -34,6 +35,7 @@ declare module "next-auth" {
  * @see https://next-auth.js.org/configuration/options
  */
 export const authOptions: NextAuthOptions = {
+  adapter: AuthAdapter(),
   callbacks: {
     session({ session, user }) {
       if (session.user) {
@@ -44,9 +46,9 @@ export const authOptions: NextAuthOptions = {
     },
   },
   providers: [
-    DiscordProvider({
-      clientId: env.DISCORD_CLIENT_ID,
-      clientSecret: env.DISCORD_CLIENT_SECRET,
+    Email({
+      server: `smtp://${env.SES_SMTP_USERNAME}:${env.SES_SMTP_PASSWORD}@email-smtp.us-east-1.amazonaws.com:587`,
+      from: "no-reply@phractal.xyz",
     }),
     /**
      * ...add more providers here.
