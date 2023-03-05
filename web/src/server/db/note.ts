@@ -1,5 +1,6 @@
 import { type Note } from "@/server/domain/note";
 import { createId } from "@paralleldrive/cuid2";
+import { type Filter } from "mongodb";
 import { db } from "./client";
 
 type DbNote = Omit<Note, "id"> & { _id: string };
@@ -75,4 +76,43 @@ export const getNoteByIdAndUserId: GetNoteByIdAndUserIdFn = async (
   });
 
   return res && convertDbNoteToNote(res);
+};
+
+export type PaginateNotesByUserIdFn = (args: {
+  userId: string;
+  limit: number;
+  startingAfter?: string;
+}) => Promise<{
+  hasMore: boolean;
+  items: Note[];
+}>;
+
+export const paginateNotesByUserId: PaginateNotesByUserIdFn = async (args) => {
+  let filter: Filter<DbNote> = { userId: args.userId };
+  if (args.startingAfter)
+    filter = {
+      ...filter,
+      _id: { $gt: args.startingAfter },
+    };
+
+  const cursor = noteColl.find(filter, {
+    limit: args.limit + 1,
+    sort: {
+      updatedAt: "desc",
+    },
+  });
+
+  const items = await cursor.toArray();
+
+  return {
+    hasMore: items.length > args.limit,
+    items: items.slice(0, -1).map((dbNote) => ({
+      id: dbNote._id,
+      content: dbNote.content,
+      name: dbNote.name,
+      userId: dbNote.userId,
+      createdAt: dbNote.createdAt,
+      updatedAt: dbNote.updatedAt,
+    })),
+  };
 };

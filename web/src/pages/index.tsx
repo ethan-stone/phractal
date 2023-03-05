@@ -35,6 +35,16 @@ const Home: NextPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedNote, setSelectedNote] = useState<string>();
 
+  const { data } = api.notes.listNotes.useInfiniteQuery(
+    {
+      limit: 25,
+    },
+    {
+      getNextPageParam: (lastPage) =>
+        lastPage.items[lastPage.items.length - 1]?.id,
+    }
+  );
+
   const { mutate: newNote, isLoading } = api.notes.newNote.useMutation({
     onSuccess(data) {
       setSelectedNote(data.id);
@@ -75,6 +85,16 @@ const Home: NextPage = () => {
               New Note
             </button>
           )}
+          <div>
+            {!data ? (
+              <p>No Notes</p>
+            ) : (
+              data.pages
+                .map(({ items }) => items)
+                .flat()
+                .map((i) => <div key={i.id}>{i.id}</div>)
+            )}
+          </div>
         </div>
       </main>
     </>

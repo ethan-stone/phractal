@@ -4,9 +4,11 @@ import { updateNoteUseCase } from "@/server/api/useCases/update-note-use-case";
 import {
   getNoteByIdAndUserId,
   insertNote,
+  paginateNotesByUserId,
   updateNoteById,
 } from "@/server/db/note";
 import { newNoteUseCase } from "@/server/api/useCases/new-note-use-case";
+import { listNotesUseCase } from "@/server/api/useCases/list-notes-use-case";
 
 export const notesRouter = createTRPCRouter({
   newNote: protectedProcedure.mutation(async ({ ctx }) => {
@@ -38,6 +40,26 @@ export const notesRouter = createTRPCRouter({
         {
           getNoteByIdAndUserId,
           updateNoteById,
+        }
+      );
+    }),
+  listNotes: protectedProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(100).default(25),
+        cursor: z.string().optional(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      console.log(input);
+      return listNotesUseCase(
+        {
+          userId: ctx.session.user.id,
+          limit: input.limit,
+          startingAfter: input.cursor,
+        },
+        {
+          paginateNotesByUserId,
         }
       );
     }),
