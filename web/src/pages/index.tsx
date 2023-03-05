@@ -4,7 +4,13 @@ import { api } from "@/utils/api";
 import { debounce } from "@/utils/debounce";
 import { type NextPage } from "next";
 import Head from "next/head";
-import { useMemo, useState } from "react";
+import {
+  useMemo,
+  useState,
+  useCallback,
+  useRef,
+  type RefCallback,
+} from "react";
 
 const Editor: React.FC<{ noteId: string }> = ({ noteId }) => {
   const [text, setText] = useState("");
@@ -35,13 +41,20 @@ const Home: NextPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedNote, setSelectedNote] = useState<string>();
 
-  const { data } = api.notes.listNotes.useInfiniteQuery(
+  const {
+    data,
+    isLoading: isNotesLoading,
+    hasNextPage,
+    fetchNextPage,
+  } = api.notes.listNotes.useInfiniteQuery(
     {
-      limit: 25,
+      limit: 10,
     },
     {
-      getNextPageParam: (lastPage) =>
-        lastPage.items[lastPage.items.length - 1]?.id,
+      getNextPageParam: (lastPage) => {
+        const lastItem = lastPage.items[lastPage.items.length - 1];
+        return lastPage.hasMore && lastItem?.id;
+      },
     }
   );
 
@@ -51,6 +64,22 @@ const Home: NextPage = () => {
       setShowModal(true);
     },
   });
+
+  const observer = useRef<IntersectionObserver | null>(null);
+
+  const lastNoteElementRef = useCallback<RefCallback<HTMLDivElement>>(
+    (node) => {
+      if (isNotesLoading) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0]?.isIntersecting && hasNextPage) {
+          void fetchNextPage();
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [fetchNextPage, hasNextPage, isNotesLoading]
+  );
 
   return (
     <>
@@ -92,7 +121,24 @@ const Home: NextPage = () => {
               data.pages
                 .map(({ items }) => items)
                 .flat()
-                .map((i) => <div key={i.id}>{i.id}</div>)
+                .map((note, idx, arr) => {
+                  if (arr.length === idx + 1) {
+                    return (
+                      <div
+                        key={note.id}
+                        ref={lastNoteElementRef}
+                        className="p-4 text-center"
+                      >
+                        {note.id}
+                      </div>
+                    );
+                  }
+                  return (
+                    <div key={note.id} className="p-4 text-center">
+                      {note.id}
+                    </div>
+                  );
+                })
             )}
           </div>
         </div>

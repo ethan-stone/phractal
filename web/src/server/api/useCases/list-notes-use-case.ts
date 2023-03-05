@@ -1,9 +1,9 @@
-import { type PaginateNotesByUserIdFn } from "@/server/db/note";
+import { type PaginateNotesByUserIdAndUpdatedAtFn } from "@/server/db/note";
 
 export async function listNotesUseCase(
   args: { userId: string; limit: number; startingAfter?: string },
   ctx: {
-    paginateNotesByUserId: PaginateNotesByUserIdFn;
+    paginateNotesByUserId: PaginateNotesByUserIdAndUpdatedAtFn;
   }
 ) {
   const page = await ctx.paginateNotesByUserId({

@@ -4,7 +4,7 @@ import { updateNoteUseCase } from "@/server/api/useCases/update-note-use-case";
 import {
   getNoteByIdAndUserId,
   insertNote,
-  paginateNotesByUserId,
+  paginateNotesByUserIdAndUpdatedAt,
   updateNoteById,
 } from "@/server/db/note";
 import { newNoteUseCase } from "@/server/api/useCases/new-note-use-case";
@@ -59,7 +59,7 @@ export const notesRouter = createTRPCRouter({
           startingAfter: input.cursor,
         },
         {
-          paginateNotesByUserId,
+          paginateNotesByUserId: paginateNotesByUserIdAndUpdatedAt,
         }
       );
     }),

@@ -78,7 +78,7 @@ export const getNoteByIdAndUserId: GetNoteByIdAndUserIdFn = async (
   return res && convertDbNoteToNote(res);
 };
 
-export type PaginateNotesByUserIdFn = (args: {
+export type PaginateNotesByUserIdAndUpdatedAtFn = (args: {
   userId: string;
   limit: number;
   startingAfter?: string;
@@ -87,32 +87,65 @@ export type PaginateNotesByUserIdFn = (args: {
   items: Note[];
 }>;
 
-export const paginateNotesByUserId: PaginateNotesByUserIdFn = async (args) => {
-  let filter: Filter<DbNote> = { userId: args.userId };
-  if (args.startingAfter)
-    filter = {
-      ...filter,
-      _id: { $gt: args.startingAfter },
+export const paginateNotesByUserIdAndUpdatedAt: PaginateNotesByUserIdAndUpdatedAtFn =
+  async (args) => {
+    let filter: Filter<DbNote> = { userId: args.userId };
+
+    if (args.startingAfter) {
+      const startingAfterItem = await noteColl.findOne({
+        _id: args.startingAfter,
+      });
+
+      if (!startingAfterItem)
+        throw new Error(
+          `No startingAfter item with id: ${args.startingAfter} found`
+        );
+
+      filter = {
+        ...filter,
+        $or: [
+          {
+            updatedAt: { $lt: startingAfterItem.updatedAt },
+          },
+          {
+            updatedAt: startingAfterItem.updatedAt,
+            _id: { $gt: startingAfterItem._id },
+          },
+        ],
+      };
+    }
+
+    const cursor = noteColl.find(filter, {
+      limit: args.limit + 1,
+      sort: {
+        updatedAt: "desc",
+        _id: "asc",
+      },
+    });
+
+    const items = await cursor.toArray();
+
+    console.log(items);
+
+    return {
+      hasMore: items.length > args.limit,
+      items:
+        items.length > args.limit
+          ? items.slice(0, -1).map((dbNote) => ({
+              id: dbNote._id,
+              content: dbNote.content,
+              name: dbNote.name,
+              userId: dbNote.userId,
+              createdAt: dbNote.createdAt,
+              updatedAt: dbNote.updatedAt,
+            }))
+          : items.map((dbNote) => ({
+              id: dbNote._id,
+              content: dbNote.content,
+              name: dbNote.name,
+              userId: dbNote.userId,
+              createdAt: dbNote.createdAt,
+              updatedAt: dbNote.updatedAt,
+            })),
     };
-
-  const cursor = noteColl.find(filter, {
-    limit: args.limit + 1,
-    sort: {
-      updatedAt: "desc",
-    },
-  });
-
-  const items = await cursor.toArray();
-
-  return {
-    hasMore: items.length > args.limit,
-    items: items.slice(0, -1).map((dbNote) => ({
-      id: dbNote._id,
-      content: dbNote.content,
-      name: dbNote.name,
-      userId: dbNote.userId,
-      createdAt: dbNote.createdAt,
-      updatedAt: dbNote.updatedAt,
-    })),
   };
-};
