@@ -101,6 +101,7 @@ export const paginateNotesByUserIdAndUpdatedAt: PaginateNotesByUserIdAndUpdatedA
           `No startingAfter item with id: ${args.startingAfter} found`
         );
 
+      // TODO: understand why this query is the correct one?
       filter = {
         ...filter,
         $or: [
