@@ -9,6 +9,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@headlessui/react": "^1.7.13",
     "@paralleldrive/cuid2": "^2.2.0",
     "@tanstack/react-query": "^4.20.2",
     "@trpc/client": "^10.9.0",

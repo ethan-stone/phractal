@@ -1,20 +1,47 @@
+import Modal from "@/components/modal";
+import Spinner from "@/components/spinner";
+import { api } from "@/utils/api";
+import { debounce } from "@/utils/debounce";
 import { type NextPage } from "next";
 import Head from "next/head";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
-const TextInput: React.FC = () => {
+const Editor: React.FC<{ noteId: string }> = ({ noteId }) => {
   const [text, setText] = useState("");
+
+  const { mutate: updateNote } = api.notes.updateById.useMutation();
+
+  const debouncedUpdateNote = useMemo(
+    () => debounce(updateNote, 500),
+    [updateNote]
+  );
 
   return (
     <textarea
       value={text}
-      className="my-10 flex w-1/2 flex-grow resize-none rounded border border-neutral-900 bg-neutral-200 p-8 font-mono text-neutral-900 shadow-2xl focus:outline-none"
-      onChange={(e) => setText(e.target.value)}
+      className="flex h-full max-w-xl flex-grow resize-none rounded border border-neutral-900 bg-neutral-200 p-8 font-mono text-neutral-900 shadow-2xl focus:outline-none"
+      onChange={(e) => {
+        setText(e.target.value);
+        debouncedUpdateNote({
+          id: noteId,
+          content: e.target.value,
+        });
+      }}
     />
   );
 };
 
 const Home: NextPage = () => {
+  const [showModal, setShowModal] = useState(false);
+  const [selectedNote, setSelectedNote] = useState<string>();
+
+  const { mutate: newNote, isLoading } = api.notes.newNote.useMutation({
+    onSuccess(data) {
+      setSelectedNote(data.id);
+      setShowModal(true);
+    },
+  });
+
   return (
     <>
       <Head>
@@ -26,10 +53,28 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="flex min-h-screen flex-col items-center justify-center bg-neutral-200">
+        <Modal
+          show={showModal}
+          onClose={() => setShowModal(false)}
+          renderContent={({}) => {
+            return selectedNote ? (
+              <Editor noteId={selectedNote} />
+            ) : (
+              <div>No note</div>
+            );
+          }}
+        />
         <div className="container flex flex-grow flex-col items-center justify-center">
-          <button className="rounded border border-neutral-900 p-2">
-            New Note
-          </button>
+          {isLoading ? (
+            <Spinner />
+          ) : (
+            <button
+              className="rounded border border-neutral-900 p-2"
+              onClick={() => newNote()}
+            >
+              New Note
+            </button>
+          )}
         </div>
       </main>
     </>
