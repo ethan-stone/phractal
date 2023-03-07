@@ -70,7 +70,7 @@ const Notes: NextPage = () => {
 
   const observer = useRef<IntersectionObserver | null>(null);
 
-  const lastNoteElementRef = useCallback<RefCallback<HTMLDivElement>>(
+  const lastNoteElementRef = useCallback<RefCallback<HTMLButtonElement>>(
     (node) => {
       if (isNotesLoading) return;
       if (observer.current) observer.current.disconnect();
@@ -102,7 +102,7 @@ const Notes: NextPage = () => {
             return selectedNote ? (
               <Editor noteId={selectedNote} />
             ) : (
-              <div>No note</div>
+              <div>No notes</div>
             );
           }}
         />
@@ -117,7 +117,7 @@ const Notes: NextPage = () => {
               New Note
             </button>
           )}
-          <div>
+          <div className="mt-4 flex flex-col gap-4">
             {!data ? (
               <p>No Notes</p>
             ) : (
@@ -125,21 +125,35 @@ const Notes: NextPage = () => {
                 .map(({ items }) => items)
                 .flat()
                 .map((note, idx, arr) => {
+                  const className =
+                    "rounded border border-neutral-900 p-4 text-center focus:outline-none";
+
                   if (arr.length === idx + 1) {
                     return (
-                      <div
+                      <button
                         key={note.id}
                         ref={lastNoteElementRef}
-                        className="p-4 text-center"
+                        className={className}
+                        onClick={() => {
+                          setSelectedNote(note.id);
+                          setShowModal(true);
+                        }}
                       >
                         {note.id}
-                      </div>
+                      </button>
                     );
                   }
                   return (
-                    <div key={note.id} className="p-4 text-center">
+                    <button
+                      key={note.id}
+                      className={className}
+                      onClick={() => {
+                        setSelectedNote(note.id);
+                        setShowModal(true);
+                      }}
+                    >
                       {note.id}
-                    </div>
+                    </button>
                   );
                 })
             )}
