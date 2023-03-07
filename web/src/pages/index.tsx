@@ -37,7 +37,7 @@ const AuthShowcase: React.FC = () => {
         </div>
       )}
       {!isSignedIn && (
-        <p className="text-center text-2xl text-white">
+        <p className="text-center text-2xl">
           <Link href="/sign-in">Sign In</Link>
         </p>
       )}

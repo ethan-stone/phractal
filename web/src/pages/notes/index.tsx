@@ -26,7 +26,7 @@ const Editor: React.FC<{ noteId: string }> = ({ noteId }) => {
   return (
     <textarea
       value={text}
-      className="flex h-full max-w-xl flex-grow resize-none rounded border border-neutral-900 bg-neutral-200 p-8 font-mono text-neutral-900 shadow-2xl focus:outline-none"
+      className="flex h-full max-w-3xl flex-grow resize-none rounded border border-neutral-900 bg-neutral-200 p-8 font-mono text-neutral-900 shadow-2xl focus:outline-none"
       onChange={(e) => {
         setText(e.target.value);
         debouncedUpdateNote({

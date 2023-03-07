@@ -28,7 +28,6 @@ const Modal: React.FC<Props> = (props) => {
             {props.renderContent({
               onClose: props.onClose,
             })}
-            d
           </div>
         </div>
       </Dialog>
