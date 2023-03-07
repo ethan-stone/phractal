@@ -1,4 +1,4 @@
-import { createTRPCRouter } from "@/server/api/trpc";
+import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { notesRouter } from "@/server/api/routers/notes";
 
 /**
@@ -8,6 +8,7 @@ import { notesRouter } from "@/server/api/routers/notes";
  */
 export const appRouter = createTRPCRouter({
   notes: notesRouter,
+  secretMessage: protectedProcedure.query(() => "secret messdage"),
 });
 
 // export type definition of API

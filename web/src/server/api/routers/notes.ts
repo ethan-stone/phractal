@@ -13,7 +13,7 @@ import { listNotesUseCase } from "@/server/api/useCases/list-notes-use-case";
 export const notesRouter = createTRPCRouter({
   newNote: protectedProcedure.mutation(async ({ ctx }) => {
     return newNoteUseCase(
-      { userId: ctx.session.user.id },
+      { userId: ctx.auth.userId },
       {
         insertNote,
       }
@@ -31,7 +31,7 @@ export const notesRouter = createTRPCRouter({
       return updateNoteUseCase(
         {
           noteId: input.id,
-          userId: ctx.session.user.id,
+          userId: ctx.auth.userId,
         },
         {
           content: input.content,
@@ -54,7 +54,7 @@ export const notesRouter = createTRPCRouter({
       console.log(input);
       return listNotesUseCase(
         {
-          userId: ctx.session.user.id,
+          userId: ctx.auth.userId,
           limit: input.limit,
           startingAfter: input.cursor,
         },

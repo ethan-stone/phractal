@@ -21,6 +21,7 @@ const server = z.object({
   MONGO_URI: z.string(),
   SES_SMTP_USERNAME: z.string(),
   SES_SMTP_PASSWORD: z.string(),
+  CLERK_SECRET_KEY: z.string(),
 });
 
 /**
@@ -29,6 +30,7 @@ const server = z.object({
  */
 const client = z.object({
   // NEXT_PUBLIC_CLIENTVAR: z.string().min(1),
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string(),
 });
 
 /**
@@ -44,6 +46,9 @@ const processEnv = {
   MONGO_URI: process.env.MONGO_URI,
   SES_SMTP_USERNAME: process.env.SES_SMTP_USERNAME,
   SES_SMTP_PASSWORD: process.env.SES_SMTP_PASSWORD,
+  CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
+    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
   // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
 };
 
