@@ -51,7 +51,6 @@ export const notesRouter = createTRPCRouter({
       })
     )
     .query(async ({ ctx, input }) => {
-      console.log(input);
       return listNotesUseCase(
         {
           userId: ctx.auth.userId,

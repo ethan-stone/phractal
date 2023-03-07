@@ -126,8 +126,6 @@ export const paginateNotesByUserIdAndUpdatedAt: PaginateNotesByUserIdAndUpdatedA
 
     const items = await cursor.toArray();
 
-    console.log(items);
-
     return {
       hasMore: items.length > args.limit,
       items:
