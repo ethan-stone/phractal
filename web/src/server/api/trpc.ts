@@ -20,6 +20,7 @@ import {
   type SignedOutAuthObject,
 } from "@clerk/nextjs/dist/api";
 import { getAuth } from "@clerk/nextjs/server";
+
 type CreateContextOptions = {
   auth: SignedInAuthObject | SignedOutAuthObject;
 };
