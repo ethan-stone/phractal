@@ -19,6 +19,7 @@ import {
 } from "react";
 import { LiveObject } from "@liveblocks/client";
 
+// TODO: refactor to include RoomProvider in this component
 const Editor: React.FC<{ noteId: string }> = ({ noteId }) => {
   const [text, setText] = useState("");
 
@@ -186,6 +187,7 @@ const Notes: NextPage = () => {
           onClose={() => setShowModal(false)}
           renderContent={({}) => {
             return selectedNote ? (
+              // TODO: move this inside the editor component
               <RoomProvider
                 id={selectedNote}
                 initialPresence={{ cursor: null }}
