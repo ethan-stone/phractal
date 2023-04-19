@@ -1,4 +1,9 @@
 import Modal from "@/components/modal";
+import {
+  RoomProvider,
+  useMutation,
+  useUpdateMyPresence,
+} from "@/components/room-provider";
 import Spinner from "@/components/spinner";
 import { api } from "@/utils/api";
 import { debounce } from "@/utils/debounce";
@@ -12,6 +17,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { LiveObject } from "@liveblocks/client";
 
 const Editor: React.FC<{ noteId: string }> = ({ noteId }) => {
   const [text, setText] = useState("");
@@ -27,7 +33,24 @@ const Editor: React.FC<{ noteId: string }> = ({ noteId }) => {
     }
   );
 
-  const { mutate: updateNote } = api.notes.updateById.useMutation();
+  // const { mutate: updateNote } = api.notes.updateById.useMutation();
+
+  // const debouncedUpdateNote = useMemo(
+  //   () => debounce(updateNote, 500),
+  //   [updateNote]
+  // );
+
+  const updateMyPresence = useUpdateMyPresence();
+
+  const debouncedUpdateMyPresence = useMemo(
+    () => debounce(updateMyPresence, 500),
+    [updateMyPresence]
+  );
+
+  const updateNote = useMutation(({ storage }, noteType, newNote) => {
+    const mutableNote = storage.get("note");
+    mutableNote.set(noteType, newNote);
+  }, []);
 
   const debouncedUpdateNote = useMemo(
     () => debounce(updateNote, 500),
@@ -54,12 +77,48 @@ const Editor: React.FC<{ noteId: string }> = ({ noteId }) => {
     <textarea
       value={text}
       className="flex h-full max-w-3xl flex-grow resize-none rounded border border-neutral-900 bg-neutral-200 p-8 font-mono text-neutral-900 shadow-2xl focus:outline-none"
-      onChange={(e) => {
-        setText(e.target.value);
-        debouncedUpdateNote({
-          id: noteId,
-          content: e.target.value,
+      onClick={(e) => {
+        const cursorPosition = e.currentTarget.selectionStart;
+        debouncedUpdateMyPresence({
+          cursor: { position: cursorPosition },
         });
+      }}
+      onKeyDown={(e) => {
+        const key = e.key;
+        const cursorPosition = e.currentTarget.selectionStart;
+        if (key === "Enter") {
+          debouncedUpdateMyPresence({
+            cursor: { position: cursorPosition },
+          });
+        } else if (key === "ArrowUp") {
+          debouncedUpdateMyPresence({
+            cursor: { position: cursorPosition },
+          });
+        } else if (key === "ArrowDown") {
+          debouncedUpdateMyPresence({
+            cursor: { position: cursorPosition },
+          });
+        } else if (key === "ArrowLeft") {
+          debouncedUpdateMyPresence({
+            cursor: { position: cursorPosition },
+          });
+        } else if (key === "ArrowRight") {
+          debouncedUpdateMyPresence({
+            cursor: { position: cursorPosition },
+          });
+        } else {
+          debouncedUpdateMyPresence({
+            cursor: { position: cursorPosition },
+          });
+        }
+      }}
+      onChange={(e) => {
+        const cursorPosition = e.currentTarget.selectionStart;
+        debouncedUpdateMyPresence({
+          cursor: { position: cursorPosition },
+        });
+        setText(e.target.value);
+        debouncedUpdateNote("content", e.target.value);
       }}
     />
   );
@@ -127,7 +186,17 @@ const Notes: NextPage = () => {
           onClose={() => setShowModal(false)}
           renderContent={({}) => {
             return selectedNote ? (
-              <Editor noteId={selectedNote} />
+              <RoomProvider
+                id={selectedNote}
+                initialPresence={{ cursor: null }}
+                initialStorage={{
+                  note: new LiveObject({
+                    content: "",
+                  }),
+                }}
+              >
+                <Editor noteId={selectedNote} />
+              </RoomProvider>
             ) : (
               <div>No notes</div>
             );
