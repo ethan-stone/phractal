@@ -1,12 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { updateNoteUseCase } from "@/server/api/useCases/update-note-use-case";
-import {
-  getNoteByIdAndUserId,
-  insertNote,
-  paginateNotesByUserIdAndUpdatedAt,
-  updateNoteById,
-} from "@/server/db/note";
+import { notesRepo } from "@/server/repos/notes-repo";
 import { newNoteUseCase } from "@/server/api/useCases/new-note-use-case";
 import { listNotesUseCase } from "@/server/api/useCases/list-notes-use-case";
 
@@ -15,7 +10,7 @@ export const notesRouter = createTRPCRouter({
     return newNoteUseCase(
       { userId: ctx.auth.userId },
       {
-        insertNote,
+        notesRepo,
       }
     );
   }),
@@ -38,8 +33,7 @@ export const notesRouter = createTRPCRouter({
           name: input.name,
         },
         {
-          getNoteByIdAndUserId,
-          updateNoteById,
+          notesRepo,
         }
       );
     }),
@@ -58,7 +52,7 @@ export const notesRouter = createTRPCRouter({
           startingAfter: input.cursor,
         },
         {
-          paginateNotesByUserId: paginateNotesByUserIdAndUpdatedAt,
+          notesRepo,
         }
       );
     }),

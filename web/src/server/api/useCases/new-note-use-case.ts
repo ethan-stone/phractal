@@ -1,14 +1,14 @@
-import { type InsertNoteFn } from "@/server/db/note";
+import { type INotesRepo } from "@/server/repos/notes-repo";
 
 export async function newNoteUseCase(
   args: {
     userId: string;
   },
   ctx: {
-    insertNote: InsertNoteFn;
+    notesRepo: INotesRepo;
   }
 ) {
-  return ctx.insertNote({
+  return ctx.notesRepo.insert({
     userId: args.userId,
     name: "Untitled",
     content: "",
