@@ -4,6 +4,7 @@ import { updateNoteUseCase } from "@/server/api/useCases/update-note-use-case";
 import { notesRepo } from "@/server/repos/notes-repo";
 import { newNoteUseCase } from "@/server/api/useCases/new-note-use-case";
 import { listNotesUseCase } from "@/server/api/useCases/list-notes-use-case";
+import { getNoteById } from "@/server/api/useCases/get-note-by-id-use-case";
 
 export const notesRouter = createTRPCRouter({
   newNote: protectedProcedure.mutation(async ({ ctx }) => {
@@ -54,6 +55,18 @@ export const notesRouter = createTRPCRouter({
         {
           notesRepo,
         }
+      );
+    }),
+  getById: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      return await getNoteById(
+        { userId: ctx.auth.userId, noteId: input.id },
+        { notesRepo }
       );
     }),
 });

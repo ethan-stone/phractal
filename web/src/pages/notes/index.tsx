@@ -16,12 +16,39 @@ import {
 const Editor: React.FC<{ noteId: string }> = ({ noteId }) => {
   const [text, setText] = useState("");
 
+  const { data: note, isLoading: isNoteLoading } = api.notes.getById.useQuery(
+    {
+      id: noteId,
+    },
+    {
+      onSuccess(data) {
+        setText(data.content);
+      },
+    }
+  );
+
   const { mutate: updateNote } = api.notes.updateById.useMutation();
 
   const debouncedUpdateNote = useMemo(
     () => debounce(updateNote, 500),
     [updateNote]
   );
+
+  if (!note && !isNoteLoading) {
+    return (
+      <div className="flex h-full max-w-3xl flex-grow resize-none rounded border border-neutral-900 bg-neutral-200 p-8 font-mono text-neutral-900 shadow-2xl focus:outline-none">
+        No note
+      </div>
+    );
+  }
+
+  if (isNoteLoading) {
+    return (
+      <div className="flex h-full max-w-3xl flex-grow resize-none rounded border border-neutral-900 bg-neutral-200 p-8 font-mono text-neutral-900 shadow-2xl focus:outline-none">
+        <Spinner />
+      </div>
+    );
+  }
 
   return (
     <textarea
