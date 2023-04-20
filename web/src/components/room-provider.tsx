@@ -10,6 +10,13 @@ type Storgae = {
   note: LiveObject<{ content: string }>;
 };
 
-// eslint-disable-next-line @typescript-eslint/unbound-method
-export const { RoomProvider, useOthers, useUpdateMyPresence, useMutation } =
-  createRoomContext<Presence, Storgae>(client);
+/* eslint-disable @typescript-eslint/unbound-method */
+export const {
+  RoomProvider,
+  useOthers,
+  useUpdateMyPresence,
+  useMutation,
+  useStorage,
+  useRoom,
+} = createRoomContext<Presence, Storgae>(client);
+/* eslint-enable @typescript-eslint/unbound-method */
