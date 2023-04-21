@@ -10,6 +10,7 @@ const server = z.object({
   MONGO_URI: z.string(),
   CLERK_SECRET_KEY: z.string(),
   OPENAI_API_KEY: z.string(),
+  PERMIT_IO_API_KEY: z.string(),
 });
 
 /**
@@ -37,6 +38,7 @@ const processEnv = {
   OPENAI_API_KEY: process.env.OPENAI_API_KEY,
   NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY:
     process.env.NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY,
+  PERMIT_IO_API_KEY: process.env.PERMIT_IO_API_KEY,
 };
 
 // Don't touch the part below
