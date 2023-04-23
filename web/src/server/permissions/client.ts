@@ -6,15 +6,15 @@ export const client = new Permit({
 });
 
 async function main() {
-  // const res1 = await client.api.createResource({
-  //   key: "note_456",
-  //   name: "Note 456",
-  //   actions: {
-  //     read: {},
-  //     write: {},
-  //     delete: {},
-  //   },
-  // });
+  const res1 = await client.api.createResource({
+    key: "note_456",
+    name: "Note 456",
+    actions: {
+      read: {},
+      write: {},
+      delete: {},
+    },
+  });
   // console.log(res1);
   // const res2 = await client.api.createRole({
   //   key: "owner_456",
