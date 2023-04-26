@@ -9,6 +9,7 @@ const server = z.object({
   // Add `.min(1) on ID and SECRET if you want to make sure they're not empty
   MONGO_URI: z.string(),
   CLERK_SECRET_KEY: z.string(),
+  CLERK_WH_SECRET: z.string(),
   OPENAI_API_KEY: z.string(),
   PERMIT_IO_API_KEY: z.string(),
 });
@@ -33,6 +34,7 @@ const processEnv = {
   NODE_ENV: process.env.NODE_ENV,
   MONGO_URI: process.env.MONGO_URI,
   CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
+  CLERK_WH_SECRET: process.env.CLERK_WH_SECRET,
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
     process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
   OPENAI_API_KEY: process.env.OPENAI_API_KEY,
