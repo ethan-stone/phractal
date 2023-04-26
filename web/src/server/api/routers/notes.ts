@@ -5,6 +5,7 @@ import { notesRepo } from "@/server/repos/notes-repo";
 import { newNoteUseCase } from "@/server/api/useCases/new-note-use-case";
 import { listNotesUseCase } from "@/server/api/useCases/list-notes-use-case";
 import { getNoteById } from "@/server/api/useCases/get-note-by-id-use-case";
+import { permissionsRepo } from "@/server/repos/permissions-repo";
 
 export const notesRouter = createTRPCRouter({
   newNote: protectedProcedure.mutation(async ({ ctx }) => {
@@ -12,6 +13,7 @@ export const notesRouter = createTRPCRouter({
       { userId: ctx.auth.userId },
       {
         notesRepo,
+        permissionsRepo,
       }
     );
   }),
