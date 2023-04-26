@@ -13,7 +13,6 @@ import Head from "next/head";
 import { type RefCallback, useCallback, useRef, useState } from "react";
 import { LiveObject } from "@liveblocks/client";
 
-// TODO: refactor to include RoomProvider in this component
 const Editor: React.FC = ({}) => {
   const content = useStorage((root) => root.note.content);
 
