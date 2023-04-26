@@ -4,6 +4,7 @@ import { Webhook } from "svix";
 import { z } from "zod";
 import { buffer } from "micro";
 import { type WebhookEvent } from "@clerk/clerk-sdk-node";
+import { userRepo } from "@/server/repos/user-repo";
 
 const secret = env.CLERK_WH_SECRET;
 
@@ -36,16 +37,24 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
   const event = wh.verify(payload, headers.data) as WebhookEvent;
 
-  console.log(event);
-
   switch (event.type) {
     case "user.created": {
-      console.log("user created");
+      await userRepo.insert({
+        id: event.data.id,
+        createdAt: new Date(event.data.created_at),
+        updatedAt: new Date(event.data.updated_at),
+      });
       break;
     }
-  }
 
-  console.log(payload);
+    case "user.updated": {
+      console.log("user updated");
+    }
+
+    case "user.deleted": {
+      console.log("user deleted");
+    }
+  }
 
   return res.status(200).json({});
 };
