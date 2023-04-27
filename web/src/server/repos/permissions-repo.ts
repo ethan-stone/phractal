@@ -28,9 +28,33 @@ type CreateResourceResult = {
   updatedAt: Date;
 };
 
+type CreateUserArgs = {
+  key: string;
+};
+
+type CreateUserResult = {
+  key: string;
+};
+
+type CreateRoleArgs = {
+  key: string;
+  name: string;
+  permissions: { resource: string; action: string }[];
+};
+
+type CreateRoleResult = {
+  key: string;
+  name: string;
+  permissions: { resource: string; action: string }[];
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export interface IPermssionsRepo {
   check(user: string, action: string, resource: string): Promise<boolean>;
   createResource(args: CreateResourceArgs): Promise<CreateResourceResult>;
+  createUser(args: CreateUserArgs): Promise<CreateUserResult>;
+  createRole(args: CreateRoleArgs): Promise<CreateRoleResult>;
 }
 
 export class PermissionsRepo {
@@ -60,6 +84,40 @@ export class PermissionsRepo {
       createdAt: new Date(res.created_at),
       updatedAt: new Date(res.updated_at),
       description: res.description,
+    };
+  }
+
+  async createUser(args: CreateUserArgs): Promise<CreateUserResult> {
+    const res = await this.source.api.createUser({
+      key: args.key,
+    });
+
+    return {
+      key: res.key,
+    };
+  }
+
+  async createRole(args: CreateRoleArgs): Promise<CreateRoleResult> {
+    const res = await this.source.api.createRole({
+      key: args.key,
+      name: args.name,
+      permissions: args.permissions.map((p) => `${p.resource}:${p.action}`),
+    });
+
+    return {
+      key: res.key,
+      name: res.name,
+      permissions:
+        res.permissions?.map((p) => {
+          const [resource, action] = p.split(":");
+
+          return {
+            action: resource as string,
+            resource: action as string,
+          };
+        }) || [],
+      createdAt: new Date(res.created_at),
+      updatedAt: new Date(res.updated_at),
     };
   }
 }

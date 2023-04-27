@@ -5,6 +5,7 @@ import { z } from "zod";
 import { buffer } from "micro";
 import { type WebhookEvent } from "@clerk/clerk-sdk-node";
 import { userRepo } from "@/server/repos/user-repo";
+import { permissionsRepo } from "@/server/repos/permissions-repo";
 
 const secret = env.CLERK_WH_SECRET;
 
@@ -39,11 +40,16 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
   switch (event.type) {
     case "user.created": {
-      await userRepo.insert({
+      const user = await userRepo.insert({
         id: event.data.id,
         createdAt: new Date(event.data.created_at),
         updatedAt: new Date(event.data.updated_at),
       });
+
+      await permissionsRepo.createUser({
+        key: user.id,
+      });
+
       break;
     }
 
