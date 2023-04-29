@@ -10,7 +10,7 @@ const isPublic = (path: string) => {
 };
 
 export default withClerkMiddleware((req) => {
-  if (!isPublic(req.nextUrl.pathname)) {
+  if (isPublic(req.nextUrl.pathname)) {
     return NextResponse.next();
   }
 
