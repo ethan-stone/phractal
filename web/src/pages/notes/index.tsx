@@ -1,126 +1,33 @@
-import Modal from "@/components/modal";
-import {
-  RoomProvider,
-  useMutation,
-  useStorage,
-  useUpdateMyPresence,
-} from "@/components/room-provider";
-import Spinner from "@/components/spinner";
 import { api } from "@/utils/api";
 import { useAuth } from "@clerk/nextjs";
 import { type NextPage } from "next";
 import Head from "next/head";
-import { type RefCallback, useCallback, useRef, useState } from "react";
-import { LiveObject } from "@liveblocks/client";
+import { type RefCallback, useCallback, useRef } from "react";
+import Sidebar from "@/components/sidebar";
+import { useRouter } from "next/router";
 
-const Editor: React.FC = ({}) => {
-  const content = useStorage((root) => root.note.content);
+const NewNoteCard: React.FC = () => {
+  const router = useRouter();
 
-  const updateMyPresence = useUpdateMyPresence();
-
-  const updateNote = useMutation(({ storage }, noteType, newNote) => {
-    const mutableNote = storage.get("note");
-    mutableNote.set(noteType, newNote);
-  }, []);
-
-  if (content === null) {
-    return (
-      <div className="flex h-full max-w-3xl flex-grow resize-none rounded border border-neutral-900 bg-neutral-200 p-8 font-mono text-neutral-900 shadow-2xl focus:outline-none">
-        <Spinner />
-      </div>
-    );
-  }
-
-  return (
-    <textarea
-      value={content}
-      className="flex h-full max-w-3xl flex-grow resize-none rounded border border-neutral-900 bg-neutral-200 p-8 font-mono text-neutral-900 shadow-2xl focus:outline-none"
-      onClick={(e) => {
-        const cursorPosition = e.currentTarget.selectionStart;
-        updateMyPresence({
-          cursor: { position: cursorPosition },
-        });
-      }}
-      onKeyDown={(e) => {
-        const key = e.key;
-        const cursorPosition = e.currentTarget.selectionStart;
-        if (key === "Enter") {
-          updateMyPresence({
-            cursor: { position: cursorPosition },
-          });
-        } else if (key === "ArrowUp") {
-          updateMyPresence({
-            cursor: { position: cursorPosition },
-          });
-        } else if (key === "ArrowDown") {
-          updateMyPresence({
-            cursor: { position: cursorPosition },
-          });
-        } else if (key === "ArrowLeft") {
-          updateMyPresence({
-            cursor: { position: cursorPosition },
-          });
-        } else if (key === "ArrowRight") {
-          updateMyPresence({
-            cursor: { position: cursorPosition },
-          });
-        } else {
-          updateMyPresence({
-            cursor: { position: cursorPosition },
-          });
-        }
-      }}
-      onChange={(e) => {
-        const cursorPosition = e.currentTarget.selectionStart;
-        updateMyPresence({
-          cursor: { position: cursorPosition },
-        });
-        updateNote("content", e.target.value);
-      }}
-    />
-  );
-};
-
-const Note: React.FC<{ noteId: string }> = ({ noteId }) => {
-  const { data: note, isLoading: isNoteLoading } = api.notes.getById.useQuery({
-    id: noteId,
+  const { mutate: newNote } = api.notes.newNote.useMutation({
+    onSuccess(data) {
+      void router.push(`/notes/${data.id}`);
+    },
   });
 
-  if (!note && !isNoteLoading) {
-    return (
-      <div className="flex h-full max-w-3xl flex-grow resize-none rounded border border-neutral-900 bg-neutral-200 p-8 font-mono text-neutral-900 shadow-2xl focus:outline-none">
-        No note
-      </div>
-    );
-  }
-
-  if (isNoteLoading) {
-    return (
-      <div className="flex h-20 w-20 resize-none rounded border border-neutral-900 bg-neutral-200 p-8 font-mono text-neutral-900 shadow-2xl focus:outline-none">
-        <Spinner />
-      </div>
-    );
-  }
-
   return (
-    <RoomProvider
-      id={noteId}
-      initialPresence={{ cursor: null }}
-      initialStorage={{
-        note: new LiveObject({
-          content: note.content,
-        }),
-      }}
+    <button
+      className="cursor-pointer rounded-2xl border-2 border-dashed border-gray-500 p-4 text-left shadow-xl"
+      onClick={() => newNote()}
     >
-      <Editor />
-    </RoomProvider>
+      <h3 className="text-md text-gray-900">New Note</h3>
+      <p className="mt-2 text-sm text-gray-500">Create a new note</p>
+    </button>
   );
 };
 
 const Notes: NextPage = () => {
   const { isSignedIn } = useAuth();
-  const [showModal, setShowModal] = useState(false);
-  const [selectedNote, setSelectedNote] = useState<string>();
 
   const {
     data,
@@ -139,13 +46,6 @@ const Notes: NextPage = () => {
       },
     }
   );
-
-  const { mutate: newNote, isLoading } = api.notes.newNote.useMutation({
-    onSuccess(data) {
-      setSelectedNote(data.id);
-      setShowModal(true);
-    },
-  });
 
   const observer = useRef<IntersectionObserver | null>(null);
 
@@ -173,21 +73,12 @@ const Notes: NextPage = () => {
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className="flex min-h-screen flex-col items-center justify-center bg-neutral-200">
-        <Modal
-          show={showModal}
-          onClose={() => setShowModal(false)}
-          renderContent={({}) => {
-            return selectedNote ? (
-              // TODO: move this inside the editor component
-
-              <Note noteId={selectedNote} />
-            ) : (
-              <div>No notes</div>
-            );
-          }}
-        />
-        <div className="container flex flex-grow flex-col items-center justify-center">
+      <main className="flex min-h-screen bg-white">
+        <Sidebar />
+        <div className="p-8">
+          <NewNoteCard />
+        </div>
+        {/* <div className="container flex flex-grow flex-col items-center justify-center">
           {isLoading ? (
             <Spinner />
           ) : (
@@ -239,7 +130,7 @@ const Notes: NextPage = () => {
                 })
             )}
           </div>
-        </div>
+        </div> */}
       </main>
     </>
   );
