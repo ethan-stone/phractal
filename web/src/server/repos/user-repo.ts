@@ -5,6 +5,7 @@ import { db } from "../db/client";
 
 export interface IUserRepo {
   insert(user: User): Promise<User>;
+  deleteById(id: string): Promise<void>;
 }
 
 export type DbUser = Omit<
@@ -44,6 +45,10 @@ export class UserRepo implements IUserRepo {
     const dbUser = this.fromDomainToDb(user);
     await this.users.insertOne(dbUser);
     return this.fromDbToDomain(dbUser);
+  }
+
+  async deleteById(id: string): Promise<void> {
+    await this.users.deleteOne({ _id: id });
   }
 }
 

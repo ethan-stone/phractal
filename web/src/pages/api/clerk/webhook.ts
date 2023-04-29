@@ -53,12 +53,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       break;
     }
 
-    case "user.updated": {
-      console.log("user updated");
-    }
-
     case "user.deleted": {
-      console.log("user deleted");
+      await userRepo.deleteById(event.data.id as string);
+
+      await permissionsRepo.deleteUser(event.data.id as string);
     }
   }
 

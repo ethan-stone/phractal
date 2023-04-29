@@ -54,6 +54,7 @@ export interface IPermssionsRepo {
   check(user: string, action: string, resource: string): Promise<boolean>;
   createResource(args: CreateResourceArgs): Promise<CreateResourceResult>;
   createUser(args: CreateUserArgs): Promise<CreateUserResult>;
+  deleteUser(key: string): Promise<void>;
   createRole(args: CreateRoleArgs): Promise<CreateRoleResult>;
 }
 
@@ -95,6 +96,10 @@ export class PermissionsRepo {
     return {
       key: res.key,
     };
+  }
+
+  async deleteUser(key: string): Promise<void> {
+    await this.source.api.deleteUser(key);
   }
 
   async createRole(args: CreateRoleArgs): Promise<CreateRoleResult> {
