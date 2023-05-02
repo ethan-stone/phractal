@@ -18,7 +18,7 @@ const NewNoteCard: React.FC = () => {
 
   return (
     <button
-      className="w-full cursor-pointer rounded-2xl border-2 border-dashed border-gray-500 p-4 py-10 text-left shadow-xl"
+      className="h-80 w-60 cursor-pointer rounded-2xl border-2 border-dashed border-gray-500 p-4 py-10 text-left shadow-xl"
       onClick={() => newNote()}
     >
       <h3 className="text-md text-gray-900">New Note</h3>
@@ -50,7 +50,7 @@ const Notes: NextPage = () => {
 
   const observer = useRef<IntersectionObserver | null>(null);
 
-  const lastNoteElementRef = useCallback<RefCallback<HTMLButtonElement>>(
+  const lastNoteElementRef = useCallback<RefCallback<HTMLDivElement>>(
     (node) => {
       if (isNotesLoading) return;
       if (observer.current) observer.current.disconnect();
@@ -74,9 +74,9 @@ const Notes: NextPage = () => {
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className="flex min-h-screen bg-white">
+      <main className="flex h-screen bg-white">
         <Sidebar />
-        <div className="grid grid-cols-8 gap-8 p-8">
+        <div className="flex flex-wrap gap-8 overflow-y-auto py-4 px-8">
           <div key={"123"}>
             <NewNoteCard />
           </div>
@@ -86,11 +86,21 @@ const Notes: NextPage = () => {
               .map(({ items }) => items)
               .flat()
               .map((note, idx, arr) => {
-                const className =
-                  "rounded border border-neutral-900 p-4 text-center focus:outline-none";
+                const className = ``;
+                if (arr.length === idx + 1) {
+                  return (
+                    <div
+                      className={className}
+                      ref={lastNoteElementRef}
+                      key={idx}
+                    >
+                      <NoteCard noteId={note.id} />
+                    </div>
+                  );
+                }
 
                 return (
-                  <div key={note.id}>
+                  <div className={className} key={idx}>
                     <NoteCard noteId={note.id} />
                   </div>
                 );
