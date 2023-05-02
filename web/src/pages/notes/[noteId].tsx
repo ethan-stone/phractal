@@ -22,7 +22,7 @@ const Editor: React.FC = ({}) => {
 
   if (content === null) {
     return (
-      <div className="flex h-full max-w-3xl flex-grow resize-none rounded border border-neutral-900 bg-neutral-200 p-8 font-mono text-neutral-900 shadow-2xl focus:outline-none">
+      <div className="flex h-5/6 w-3/4 max-w-3xl flex-grow resize-none rounded border border-neutral-900 bg-neutral-200 p-8 font-mono text-neutral-900 shadow-2xl focus:outline-none">
         <Spinner />
       </div>
     );
@@ -81,11 +81,16 @@ const Editor: React.FC = ({}) => {
 const Note: NextPage = () => {
   const router = useRouter();
 
-  const { noteId } = router.query as { noteId: string };
+  const { noteId } = router.query as { noteId: string | undefined };
 
-  const { data: note, isLoading: isNoteLoading } = api.notes.getById.useQuery({
-    id: noteId,
-  });
+  const { data: note, isLoading: isNoteLoading } = api.notes.getById.useQuery(
+    {
+      id: noteId as string,
+    },
+    {
+      enabled: !!noteId,
+    }
+  );
 
   if (!note && !isNoteLoading) {
     return (
@@ -98,18 +103,12 @@ const Note: NextPage = () => {
   }
 
   if (isNoteLoading) {
-    return (
-      <main className="flex min-h-screen items-center bg-white">
-        <div className="flex h-20 w-20 resize-none rounded border border-neutral-900 bg-neutral-200 p-8 font-mono text-neutral-900 shadow-2xl focus:outline-none">
-          <Spinner />
-        </div>
-      </main>
-    );
+    return <main className="flex min-h-screen items-center bg-white"></main>;
   }
 
   return (
     <RoomProvider
-      id={noteId}
+      id={note.id}
       initialPresence={{ cursor: null }}
       initialStorage={{
         note: new LiveObject({
