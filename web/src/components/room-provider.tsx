@@ -7,7 +7,7 @@ type Presence = {
 };
 
 type Storgae = {
-  note: LiveObject<{ content: string }>;
+  note: LiveObject<{ content: string; name: string }>;
 };
 
 /* eslint-disable @typescript-eslint/unbound-method */

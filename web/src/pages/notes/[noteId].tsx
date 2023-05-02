@@ -15,10 +15,13 @@ const Editor: React.FC = ({}) => {
 
   const updateMyPresence = useUpdateMyPresence();
 
-  const updateNote = useMutation(({ storage }, noteType, newNote) => {
-    const mutableNote = storage.get("note");
-    mutableNote.set(noteType, newNote);
-  }, []);
+  const updateNote = useMutation(
+    ({ storage }, noteType: "content" | "name", newNote: string) => {
+      const mutableNote = storage.get("note");
+      mutableNote.set(noteType, newNote);
+    },
+    []
+  );
 
   if (content === null) {
     return (
@@ -113,11 +116,19 @@ const Note: NextPage = () => {
       initialStorage={{
         note: new LiveObject({
           content: note.content,
+          name: note.name,
         }),
       }}
     >
-      <main className="flex h-screen flex-col items-center justify-center bg-white">
-        <div className="flex h-full w-full items-center justify-center">
+      <main className="flex h-screen flex-row items-center justify-center bg-white">
+        <div className="flex flex-grow flex-col items-center justify-center p-8">
+          <input
+            className="border border-none p-4 font-mono text-3xl outline-none"
+            placeholder="Untitled"
+          />
+          <button className="font-mono">Generate Summary</button>
+        </div>
+        <div className="flex h-full w-full flex-grow items-center justify-center">
           <Editor />
         </div>
       </main>
