@@ -5,6 +5,7 @@ import Head from "next/head";
 import { type RefCallback, useCallback, useRef } from "react";
 import Sidebar from "@/components/sidebar";
 import { useRouter } from "next/router";
+import NoteCard from "@/components/note-card";
 
 const NewNoteCard: React.FC = () => {
   const router = useRouter();
@@ -17,7 +18,7 @@ const NewNoteCard: React.FC = () => {
 
   return (
     <button
-      className="cursor-pointer rounded-2xl border-2 border-dashed border-gray-500 p-4 text-left shadow-xl"
+      className="w-full cursor-pointer rounded-2xl border-2 border-dashed border-gray-500 p-4 py-10 text-left shadow-xl"
       onClick={() => newNote()}
     >
       <h3 className="text-md text-gray-900">New Note</h3>
@@ -30,7 +31,7 @@ const Notes: NextPage = () => {
   const { isSignedIn } = useAuth();
 
   const {
-    data,
+    data: notes,
     isLoading: isNotesLoading,
     hasNextPage,
     fetchNextPage,
@@ -75,62 +76,26 @@ const Notes: NextPage = () => {
       </Head>
       <main className="flex min-h-screen bg-white">
         <Sidebar />
-        <div className="p-8">
-          <NewNoteCard />
-        </div>
-        {/* <div className="container flex flex-grow flex-col items-center justify-center">
-          {isLoading ? (
-            <Spinner />
-          ) : (
-            <button
-              className="rounded border border-neutral-900 p-2"
-              onClick={() => newNote()}
-            >
-              New Note
-            </button>
-          )}
-          <div className="mt-4 flex flex-col gap-4">
-            {!data ? (
-              <p>No Notes</p>
-            ) : (
-              data.pages
-                .map(({ items }) => items)
-                .flat()
-                .map((note, idx, arr) => {
-                  const className =
-                    "rounded border border-neutral-900 p-4 text-center focus:outline-none";
-
-                  if (arr.length === idx + 1) {
-                    return (
-                      <button
-                        key={note.id}
-                        ref={lastNoteElementRef}
-                        className={className}
-                        onClick={() => {
-                          setSelectedNote(note.id);
-                          setShowModal(true);
-                        }}
-                      >
-                        {note.id}
-                      </button>
-                    );
-                  }
-                  return (
-                    <button
-                      key={note.id}
-                      className={className}
-                      onClick={() => {
-                        setSelectedNote(note.id);
-                        setShowModal(true);
-                      }}
-                    >
-                      {note.id}
-                    </button>
-                  );
-                })
-            )}
+        <div className="grid grid-cols-8 gap-8 p-8">
+          <div key={"123"}>
+            <NewNoteCard />
           </div>
-        </div> */}
+          {!isNotesLoading &&
+            notes &&
+            notes.pages
+              .map(({ items }) => items)
+              .flat()
+              .map((note, idx, arr) => {
+                const className =
+                  "rounded border border-neutral-900 p-4 text-center focus:outline-none";
+
+                return (
+                  <div key={note.id}>
+                    <NoteCard noteId={note.id} />
+                  </div>
+                );
+              })}
+        </div>
       </main>
     </>
   );
