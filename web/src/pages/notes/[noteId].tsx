@@ -84,6 +84,7 @@ const Editor: React.FC = ({}) => {
 
 const NameAndDescription: React.FC = () => {
   const name = useStorage((root) => root.note.name);
+  const content = useStorage((root) => root.note.content);
 
   const updateNote = useMutation(
     ({ storage }, noteType: "content" | "name", newNote: string) => {
@@ -92,6 +93,9 @@ const NameAndDescription: React.FC = () => {
     },
     []
   );
+
+  const { data: completion, mutate: createCompletion } =
+    api.comletions.createCompletion.useMutation();
 
   if (name === null) {
     return (
@@ -102,7 +106,7 @@ const NameAndDescription: React.FC = () => {
   }
 
   return (
-    <div className="flex h-full flex-col px-8 py-24">
+    <div className="flex h-full max-w-2xl flex-col px-8 py-24">
       <input
         className="border border-none p-4 font-mono text-3xl outline-none"
         placeholder="Untitled"
@@ -111,10 +115,20 @@ const NameAndDescription: React.FC = () => {
           updateNote("name", e.target.value);
         }}
       />
-      <button className="flex w-full flex-row items-center justify-center gap-4 rounded bg-neutral-900 p-3 font-mono text-white">
+      <button
+        onClick={() => {
+          if (content) {
+            createCompletion({
+              content,
+            });
+          }
+        }}
+        className="flex w-full flex-row items-center justify-center gap-4 rounded bg-neutral-900 p-3 font-mono text-white"
+      >
         <ArrowPathIcon height={20} width={20} />
         Generate Summary
       </button>
+      {completion && <p className="py-4 font-mono">{completion}</p>}
     </div>
   );
 };
