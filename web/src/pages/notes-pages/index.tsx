@@ -76,7 +76,7 @@ const Notes: NextPage = () => {
       </Head>
       <main className="flex h-screen bg-white">
         <Sidebar />
-        <div className="flex flex-wrap gap-8 overflow-y-auto py-4 px-8">
+        <div className="flex flex-wrap gap-8 overflow-y-auto px-8 py-4">
           <div key={"123"}>
             <NewNoteCard />
           </div>
