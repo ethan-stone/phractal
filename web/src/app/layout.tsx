@@ -1,4 +1,5 @@
 import { ClerkProvider } from "@clerk/nextjs";
+import ReactQueryWrapper from "@/components/react-query-wrapper";
 
 import "@/styles/globals.css";
 
@@ -7,5 +8,9 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <ClerkProvider>{children}</ClerkProvider>;
+  return (
+    <ReactQueryWrapper>
+      <ClerkProvider>{children}</ClerkProvider>;
+    </ReactQueryWrapper>
+  );
 }

@@ -1,12 +1,22 @@
 "use client";
 
-import { api } from "@/utils/api";
-import { useRouter } from "next/router";
+import { type Note } from "@/server/domain/note";
+import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 
 const NewNoteCard: React.FC = () => {
   const router = useRouter();
 
-  const { mutate: newNote } = api.notes.newNote.useMutation({
+  const { mutate: newNote } = useMutation({
+    mutationFn: async () => {
+      const res = await fetch("/api/notes", {
+        method: "POST",
+      });
+
+      const json = (await res.json()) as Note;
+
+      return json;
+    },
     onSuccess(data) {
       void router.push(`/notes/${data.id}`);
     },

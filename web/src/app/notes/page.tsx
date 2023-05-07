@@ -19,11 +19,10 @@ export default async function Page() {
   return (
     <main className="flex h-screen bg-white">
       <div className="flex flex-wrap gap-8 overflow-y-auto px-8 py-4">
-        <div key={"123"}>
-          {notes.items.map((note, idx, arr) => {
-            return <NoteCard key={idx} noteId={note.id} />;
-          })}
-        </div>
+        <NewNoteCard key={"123"} />
+        {notes.items.map((note, idx) => {
+          return <NoteCard key={idx} noteId={note.id} />;
+        })}
       </div>
     </main>
   );

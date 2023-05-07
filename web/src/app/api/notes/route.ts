@@ -1,5 +1,8 @@
+import { newNoteUseCase } from "@/server/api/useCases/new-note-use-case";
+import { notesRepo } from "@/server/repos/notes-repo";
+import { permissionsRepo } from "@/server/repos/permissions-repo";
 import { auth } from "@clerk/nextjs";
-import { NextResponse, NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 
 const searchParamsSchema = z.object({
@@ -32,10 +35,26 @@ export async function GET(req: NextRequest) {
 /**
  * create a new note
  */
-export function POST() {
+export async function POST() {
   const { userId } = auth();
 
-  console.log(userId);
+  if (!userId)
+    return NextResponse.json(
+      {},
+      {
+        status: 401,
+      }
+    );
 
-  return NextResponse.json({});
+  const newNote = await newNoteUseCase(
+    {
+      userId,
+    },
+    {
+      notesRepo: notesRepo,
+      permissionsRepo: permissionsRepo,
+    }
+  );
+
+  return NextResponse.json(newNote);
 }
