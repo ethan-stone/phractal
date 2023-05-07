@@ -1,6 +1,6 @@
 import { authMiddleware } from "@clerk/nextjs/server";
 
-const publicPaths = ["/", "/sign-in", "/sign-up", "/api/trpc*", "/api/test"];
+const publicPaths = ["/", "/sign-in", "/sign-up", "/api/trpc*", "/api/notes"];
 
 const isPublic = (path: string) => {
   return publicPaths.find((publicPath) =>
@@ -10,28 +10,11 @@ const isPublic = (path: string) => {
 
 export default authMiddleware({
   publicRoutes(req) {
-    return isPublic(req.nextUrl.pathname) !== undefined;
+    const result = isPublic(req.nextUrl.pathname) !== undefined;
+    console.log(result);
+    return result;
   },
 });
-
-// export default withClerkMiddleware((req) => {
-//   console.log(req.url);
-//   return NextResponse.next();
-
-//   if (isPublic(req.nextUrl.pathname)) {
-//     return NextResponse.next();
-//   }
-
-//   const { userId } = getAuth(req);
-
-//   if (!userId) {
-//     const signInUrl = new URL("/sign-in", req.url);
-//     signInUrl.searchParams.set("redirect_url", req.url);
-//     return NextResponse.redirect(signInUrl);
-//   }
-
-//   return NextResponse.next();
-// });
 
 // Stop Middleware running on static files
 export const config = {
