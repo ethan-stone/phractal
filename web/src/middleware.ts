@@ -1,6 +1,13 @@
 import { authMiddleware } from "@clerk/nextjs/server";
 
-const publicPaths = ["/", "/sign-in", "/sign-up", "/api/trpc*", "/api/notes"];
+const publicPaths = [
+  "/",
+  "/sign-in",
+  "/sign-up",
+  "/api/trpc*",
+  "/api/notes",
+  "/api/clerk/webhook",
+];
 
 const isPublic = (path: string) => {
   return publicPaths.find((publicPath) =>
